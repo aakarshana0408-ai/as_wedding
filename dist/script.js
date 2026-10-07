@@ -14,6 +14,7 @@ function revealSite() {
   document.querySelectorAll(".hero .reveal").forEach((element) => {
     element.classList.add("is-visible");
   });
+  window.setTimeout(revealVisibleElements, 80);
   window.setTimeout(() => {
     intro.setAttribute("aria-hidden", "true");
   }, 1250);
@@ -44,6 +45,7 @@ video.addEventListener("playing", () => {
 video.addEventListener("error", showEnterButton);
 
 window.addEventListener("load", async () => {
+  window.setTimeout(revealVisibleElements, 120);
   if (!hasVideoSource()) {
     showEnterButton();
     return;
@@ -70,6 +72,20 @@ const revealObserver = new IntersectionObserver(
 );
 
 document.querySelectorAll(".reveal").forEach((element) => revealObserver.observe(element));
+
+function revealVisibleElements() {
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  document.querySelectorAll(".reveal:not(.is-visible)").forEach((element) => {
+    const rect = element.getBoundingClientRect();
+    if (rect.top < viewportHeight * 0.92 && rect.bottom > viewportHeight * 0.05) {
+      element.classList.add("is-visible");
+      revealObserver.unobserve(element);
+    }
+  });
+}
+
+window.addEventListener("scroll", revealVisibleElements, { passive: true });
+window.addEventListener("hashchange", () => window.setTimeout(revealVisibleElements, 80));
 
 const petalLayer = document.querySelector("#petalLayer");
 if (petalLayer) {
