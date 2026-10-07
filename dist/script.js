@@ -1,0 +1,85 @@
+const intro = document.querySelector("#intro");
+const site = document.querySelector("#site");
+const video = document.querySelector("#introVideo");
+const enterButton = document.querySelector("#enterButton");
+const videoPlaceholder = document.querySelector("#videoPlaceholder");
+let hasEntered = false;
+
+function revealSite() {
+  if (hasEntered) return;
+  hasEntered = true;
+  intro.classList.add("is-done");
+  site.classList.remove("is-hidden");
+  document.body.classList.add("site-open");
+  document.querySelectorAll(".hero .reveal").forEach((element) => {
+    element.classList.add("is-visible");
+  });
+  window.setTimeout(() => {
+    intro.setAttribute("aria-hidden", "true");
+  }, 1250);
+}
+
+function showEnterButton() {
+  if (!hasEntered) enterButton.classList.add("is-visible");
+}
+
+function hasVideoSource() {
+  return Boolean(video.currentSrc || video.querySelector("source"));
+}
+
+if (new URLSearchParams(window.location.search).get("preview") === "main") {
+  revealSite();
+}
+
+if (hasVideoSource()) {
+  enterButton.classList.remove("is-visible");
+}
+
+enterButton.addEventListener("click", revealSite);
+video.addEventListener("ended", revealSite);
+video.addEventListener("playing", () => {
+  videoPlaceholder.style.opacity = "0";
+  enterButton.classList.remove("is-visible");
+});
+video.addEventListener("error", showEnterButton);
+
+window.addEventListener("load", async () => {
+  if (!hasVideoSource()) {
+    showEnterButton();
+    return;
+  }
+
+  try {
+    await video.play();
+    window.setTimeout(showEnterButton, 1600);
+  } catch {
+    showEnterButton();
+  }
+});
+
+const revealObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-visible");
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  },
+  { threshold: 0.18 }
+);
+
+document.querySelectorAll(".reveal").forEach((element) => revealObserver.observe(element));
+
+const petalLayer = document.querySelector("#petalLayer");
+if (petalLayer) {
+  for (let index = 0; index < 24; index += 1) {
+    const petal = document.createElement("span");
+    petal.className = "petal";
+    petal.style.left = `${Math.random() * 100}%`;
+    petal.style.animationDuration = `${10 + Math.random() * 9}s`;
+    petal.style.animationDelay = `${Math.random() * 10}s`;
+    petal.style.setProperty("--drift", `${-45 + Math.random() * 90}px`);
+    petalLayer.appendChild(petal);
+  }
+}
