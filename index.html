@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Inter:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Great+Vibes&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link
@@ -46,6 +46,13 @@
     </div>
 
     <main class="site-shell is-hidden" id="site">
+      <header class="topbar" aria-label="Invitation header">
+        <a href="#home">P. Selvendhiran <span>&amp;</span> R. Asmitha</a>
+        <a class="menu-lines" href="#familyTitle" aria-label="Go to invitation">
+          <span></span><span></span><span></span>
+        </a>
+      </header>
+
       <section class="section hero" id="home" aria-labelledby="heroTitle">
         <div class="ornate-border"></div>
         <div class="thoranam" aria-hidden="true">
@@ -53,13 +60,11 @@
         </div>
         <div class="hero-card reveal">
           <div class="kolam-mark" aria-hidden="true"></div>
-          <p class="scriptline">Together with their families</p>
+          <p class="invite-copy">It started with two people. It grew into a beautiful story. And now, it becomes a lifetime.</p>
           <h1 id="heroTitle">
-            <span class="name-initial">P.</span>
-            <span>Selvendhiran, B.E.</span>
+            <span>P. Selvendhiran, B.E.</span>
             <em>&amp;</em>
-            <span>R. Asmitha,</span>
-            <span>M.Sc., MS (UK)</span>
+            <span>R. Asmitha, M.Sc., MS (UK)</span>
           </h1>
           <p class="hero-date">Friday, 20 November 2026</p>
         </div>
@@ -101,19 +106,27 @@
       </section>
 
       <section class="section family-section" aria-labelledby="familyTitle">
-        <div class="section-heading reveal">
-          <p class="scriptline">With the Blessings</p>
-          <h2 id="familyTitle">With the Blessings of Our Families</h2>
-        </div>
-        <div class="family-grid">
-          <article class="family-card reveal">
-            <p class="role">Groom's Family</p>
-            <h3>C. Priyagaran &amp; Mrs. P. Santhi</h3>
-          </article>
-          <article class="family-card reveal">
-            <p class="role">Bride's Family</p>
-            <h3>C. Ravichandran &amp; R. Sumathi</h3>
-          </article>
+        <div class="invitation-letter reveal">
+          <p class="formal-copy" id="familyTitle">
+            Together with the blessings of our beloved parents, we joyfully invite you
+            to celebrate our wedding and share in this beautiful beginning of our forever.
+          </p>
+          <div class="family-grid">
+            <article class="family-card reveal">
+              <p class="role">Parents of the Groom</p>
+              <h3>C. Priyagaran</h3>
+              <h3>Mrs. P. Santhi</h3>
+            </article>
+            <div class="rings slim-rings reveal" aria-hidden="true">
+              <span></span>
+              <span></span>
+            </div>
+            <article class="family-card reveal">
+              <p class="role">Parents of the Bride</p>
+              <h3>C. Ravichandran</h3>
+              <h3>R. Sumathi</h3>
+            </article>
+          </div>
         </div>
       </section>
 
@@ -123,7 +136,7 @@
           <span></span>
         </div>
         <div class="temple-panel reveal">
-          <p class="scriptline">The Wedding</p>
+          <p class="invite-copy small">Some beginnings are worth celebrating</p>
           <h2 id="weddingTitle">The Wedding</h2>
           <p class="date-only">Friday, 20 November 2026</p>
         </div>
