@@ -10,6 +10,7 @@
   --ink: #2d1812;
   --muted: #765e50;
   --shadow: 0 26px 80px rgba(59, 7, 18, 0.18);
+  --display: "Cinzel Decorative", "Cormorant Garamond", Georgia, serif;
   --serif: "Cormorant Garamond", Georgia, serif;
   --sans: "Inter", Arial, sans-serif;
   --script: "Great Vibes", cursive;
@@ -261,12 +262,57 @@ a {
 }
 
 .hero-card {
+  position: relative;
   padding: clamp(2.2rem, 5vw, 5rem) clamp(1rem, 5vw, 4rem);
   color: var(--maroon-dark);
-  background: rgba(255, 247, 230, 0.68);
-  border: 1px solid rgba(201, 149, 56, 0.58);
+  background:
+    linear-gradient(rgba(255, 247, 230, 0.72), rgba(255, 247, 230, 0.72)),
+    repeating-linear-gradient(45deg, rgba(201, 149, 56, 0.16) 0 1px, transparent 1px 18px);
+  border: 1px solid rgba(201, 149, 56, 0.76);
   box-shadow: var(--shadow);
   backdrop-filter: blur(7px);
+}
+
+.hero-card::before,
+.hero-card::after,
+.invitation-panel::after,
+.temple-panel::after {
+  content: "◆";
+  position: absolute;
+  color: rgba(201, 149, 56, 0.9);
+  font-size: 1.05rem;
+}
+
+.hero-card::before,
+.invitation-panel::after {
+  left: 1rem;
+  top: 1rem;
+}
+
+.hero-card::after,
+.temple-panel::after {
+  right: 1rem;
+  bottom: 1rem;
+}
+
+.kolam-mark {
+  width: clamp(3.7rem, 8vw, 5.8rem);
+  aspect-ratio: 1;
+  margin: 0 auto clamp(0.8rem, 2vw, 1.4rem);
+  border: 1px solid rgba(201, 149, 56, 0.72);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(114, 16, 36, 0.95) 0 8%, transparent 9%),
+    radial-gradient(circle at 50% 16%, rgba(201, 149, 56, 0.95) 0 7%, transparent 8%),
+    radial-gradient(circle at 84% 50%, rgba(201, 149, 56, 0.95) 0 7%, transparent 8%),
+    radial-gradient(circle at 50% 84%, rgba(201, 149, 56, 0.95) 0 7%, transparent 8%),
+    radial-gradient(circle at 16% 50%, rgba(201, 149, 56, 0.95) 0 7%, transparent 8%),
+    conic-gradient(from 45deg, transparent 0 12%, rgba(201, 149, 56, 0.35) 12% 14%, transparent 14% 37%, rgba(201, 149, 56, 0.35) 37% 39%, transparent 39% 62%, rgba(201, 149, 56, 0.35) 62% 64%, transparent 64% 87%, rgba(201, 149, 56, 0.35) 87% 89%, transparent 89%);
+  box-shadow: 0 0 0 0.42rem rgba(255, 247, 230, 0.76), 0 0 34px rgba(201, 149, 56, 0.28);
+}
+
+.kolam-mark.large {
+  width: clamp(4.8rem, 11vw, 7.4rem);
 }
 
 .scriptline {
@@ -295,16 +341,22 @@ p {
 
 h1 {
   margin: 0;
-  font-family: var(--serif);
-  font-size: clamp(3rem, 7vw, 5.8rem);
-  font-weight: 700;
-  line-height: 0.95;
+  font-family: var(--display);
+  font-size: clamp(2.25rem, 5vw, 4.7rem);
+  font-weight: 900;
+  line-height: 0.98;
   letter-spacing: 0;
+  text-shadow: 0 2px 0 rgba(201, 149, 56, 0.16);
 }
 
 h1 span,
 h1 em {
   display: block;
+}
+
+h1 .name-initial {
+  font-size: 0.76em;
+  line-height: 0.9;
 }
 
 h1 em {
@@ -319,16 +371,16 @@ h1 em {
 h2 {
   margin: 0;
   color: var(--maroon-dark);
-  font-family: var(--serif);
+  font-family: var(--display);
   font-size: clamp(2.5rem, 7vw, 5.8rem);
-  font-weight: 700;
-  line-height: 0.98;
+  font-weight: 900;
+  line-height: 1;
 }
 
 h3 {
   margin: 0;
   color: var(--maroon-dark);
-  font-family: var(--serif);
+  font-family: var(--display);
   font-size: clamp(1.7rem, 3vw, 2.8rem);
   line-height: 1.05;
 }
@@ -394,6 +446,19 @@ h3 {
   overflow: hidden;
 }
 
+.person-card::after,
+.family-card::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0.95rem;
+  width: min(9rem, 42%);
+  height: 0.45rem;
+  border-top: 1px solid rgba(201, 149, 56, 0.6);
+  border-bottom: 1px solid rgba(201, 149, 56, 0.35);
+  transform: translateX(-50%);
+}
+
 .person-card::before,
 .family-card::before,
 .invitation-panel::before,
@@ -422,6 +487,34 @@ h3 {
 
 .person-card h3 {
   padding-bottom: 0.55rem;
+}
+
+.card-bells {
+  position: absolute;
+  top: 1.05rem;
+  left: 1.1rem;
+  right: 1.1rem;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.card-bells span {
+  width: 1.25rem;
+  height: 1.45rem;
+  border-radius: 50% 50% 42% 42%;
+  background: linear-gradient(180deg, var(--gold-soft), var(--gold) 58%, #81530f);
+  box-shadow: inset 0 4px 7px rgba(255, 255, 255, 0.38);
+}
+
+.card-bells span::after {
+  content: "";
+  display: block;
+  width: 0.34rem;
+  height: 0.34rem;
+  margin: 1.25rem auto 0;
+  border-radius: 50%;
+  background: #5c350c;
 }
 
 .rings,
@@ -489,6 +582,7 @@ h3 {
 }
 
 .temple-panel {
+  position: relative;
   padding: clamp(2rem, 5vw, 4rem);
   border: 1px solid rgba(244, 213, 140, 0.52);
   background: rgba(43, 5, 12, 0.42);
@@ -506,6 +600,18 @@ h3 {
   font-family: var(--serif);
   font-size: clamp(1.35rem, 3vw, 2.15rem);
   font-weight: 600;
+}
+
+.temple-panel .date-only {
+  display: inline-block;
+  margin-top: 1.35rem;
+  padding: 0.85rem 1.2rem;
+  border-top: 1px solid rgba(244, 213, 140, 0.62);
+  border-bottom: 1px solid rgba(244, 213, 140, 0.62);
+  color: var(--gold-soft);
+  font-family: var(--display);
+  font-size: clamp(1.55rem, 3.5vw, 2.7rem);
+  letter-spacing: 0.03em;
 }
 
 .moment-rings {
@@ -527,6 +633,35 @@ h3 {
     linear-gradient(145deg, rgba(255, 250, 239, 0.96), rgba(247, 231, 200, 0.88)),
     radial-gradient(circle at top, rgba(201, 149, 56, 0.14), transparent 20rem);
   box-shadow: var(--shadow);
+}
+
+.invitation-panel {
+  overflow: hidden;
+}
+
+.invitation-panel h2 {
+  color: var(--maroon);
+  font-size: clamp(3rem, 8vw, 6.4rem);
+}
+
+.single-date {
+  margin: clamp(0.8rem, 2vw, 1.2rem) 0 0;
+  color: var(--green-deep);
+  font-family: var(--script);
+  font-size: clamp(2.6rem, 6vw, 4.7rem);
+  line-height: 1;
+}
+
+.invitation-panel .scriptline::before,
+.invitation-panel .scriptline::after,
+.section-heading .scriptline::before,
+.section-heading .scriptline::after {
+  content: "";
+  display: inline-block;
+  width: clamp(1.6rem, 5vw, 4rem);
+  height: 1px;
+  margin: 0 0.75rem 0.28rem;
+  background: linear-gradient(90deg, transparent, rgba(201, 149, 56, 0.78), transparent);
 }
 
 .details-list {
@@ -876,7 +1011,7 @@ dd {
   }
 
   h1 {
-    font-size: clamp(3rem, 15vw, 5.1rem);
+    font-size: clamp(2.05rem, 8.8vw, 3rem);
   }
 
   .couple-grid,
