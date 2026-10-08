@@ -1,7 +1,6 @@
 const intro = document.querySelector("#intro");
 const site = document.querySelector("#site");
 const video = document.querySelector("#introVideo");
-const enterButton = document.querySelector("#enterButton");
 const videoPlaceholder = document.querySelector("#videoPlaceholder");
 let hasEntered = false;
 
@@ -20,10 +19,6 @@ function revealSite() {
   }, 1250);
 }
 
-function showEnterButton() {
-  if (!hasEntered) enterButton.classList.add("is-visible");
-}
-
 function hasVideoSource() {
   return Boolean(video.currentSrc || video.querySelector("source"));
 }
@@ -32,30 +27,23 @@ if (new URLSearchParams(window.location.search).get("preview") === "main") {
   revealSite();
 }
 
-if (hasVideoSource()) {
-  enterButton.classList.remove("is-visible");
-}
-
-enterButton.addEventListener("click", revealSite);
 video.addEventListener("ended", revealSite);
 video.addEventListener("playing", () => {
   videoPlaceholder.style.opacity = "0";
-  enterButton.classList.remove("is-visible");
 });
-video.addEventListener("error", showEnterButton);
+video.addEventListener("error", () => window.setTimeout(revealSite, 800));
 
 window.addEventListener("load", async () => {
   window.setTimeout(revealVisibleElements, 120);
   if (!hasVideoSource()) {
-    showEnterButton();
+    window.setTimeout(revealSite, 800);
     return;
   }
 
   try {
     await video.play();
-    window.setTimeout(showEnterButton, 1600);
   } catch {
-    showEnterButton();
+    window.setTimeout(revealSite, 800);
   }
 });
 
