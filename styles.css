@@ -24,6 +24,7 @@
 
 html {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -38,6 +39,11 @@ body {
 
 body.site-open {
   background-color: var(--ivory);
+}
+
+body:not(.site-open),
+body.intro-transitioning {
+  overflow: hidden;
 }
 
 img,
@@ -62,7 +68,7 @@ a {
   background:
     radial-gradient(circle at 50% 20%, rgba(244, 213, 140, 0.28), transparent 28rem),
     linear-gradient(135deg, #22050b 0%, #5b0e1d 48%, #160305 100%);
-  transition: opacity 1.2s ease, visibility 1.2s ease;
+  transition: opacity 3.2s cubic-bezier(0.45, 0, 0.2, 1), visibility 0s linear 3.2s;
 }
 
 .intro.is-done {
@@ -84,6 +90,11 @@ a {
     linear-gradient(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.22)),
     url("assets/tamil-wedding-backdrop.png") center / cover;
   box-shadow: 0 34px 110px rgba(0, 0, 0, 0.38);
+  transition: opacity 1.8s ease-in-out;
+}
+
+.intro.is-done .intro-frame {
+  opacity: 0;
 }
 
 .intro-frame::before,
@@ -134,13 +145,13 @@ a {
 
 .site-shell {
   opacity: 1;
-  transition: opacity 1.35s ease;
+  transition: opacity 2.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .site-shell.is-hidden {
   opacity: 0;
-  height: 100vh;
-  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .topbar {
@@ -1400,6 +1411,15 @@ dd {
 .reveal.is-visible {
   opacity: 1;
   transform: translateY(0) scale(1);
+}
+
+.hero .reveal {
+  transform: translateY(12px);
+  transition: opacity 2.4s ease 0.35s, transform 2.4s ease 0.35s;
+}
+
+.hero .reveal.is-visible {
+  transform: translateY(0);
 }
 
 .slide-left {

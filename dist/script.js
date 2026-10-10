@@ -3,20 +3,37 @@ const site = document.querySelector("#site");
 const video = document.querySelector("#introVideo");
 const videoPlaceholder = document.querySelector("#videoPlaceholder");
 let hasEntered = false;
+site.inert = true;
+const invitationReady = Promise.all([
+  document.fonts.ready,
+  ...Array.from(document.querySelectorAll(".hero img"), (image) => image.decode().catch(() => {})),
+]);
 
-function revealSite() {
+async function revealSite() {
   if (hasEntered) return;
   hasEntered = true;
-  intro.classList.add("is-done");
+  await Promise.race([invitationReady, new Promise((resolve) => window.setTimeout(resolve, 1200))]);
+  document.body.classList.add("intro-transitioning");
   site.classList.remove("is-hidden");
   document.body.classList.add("site-open");
   document.querySelectorAll(".hero .reveal").forEach((element) => {
     element.classList.add("is-visible");
   });
   window.setTimeout(revealVisibleElements, 80);
-  window.setTimeout(() => {
+  const finishIntro = () => {
+    window.clearTimeout(finishTimer);
+    intro.removeEventListener("transitionend", onFadeEnd);
     intro.setAttribute("aria-hidden", "true");
-  }, 1250);
+    document.body.classList.remove("intro-transitioning");
+    site.inert = false;
+  };
+  const onFadeEnd = (event) => {
+    if (event.target === intro && event.propertyName === "opacity") finishIntro();
+  };
+  const finishTimer = window.setTimeout(finishIntro,
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 3400);
+  intro.addEventListener("transitionend", onFadeEnd);
+  requestAnimationFrame(() => requestAnimationFrame(() => intro.classList.add("is-done")));
 }
 
 function hasVideoSource() {
@@ -49,6 +66,7 @@ window.addEventListener("load", async () => {
 
 const revealObserver = new IntersectionObserver(
   (entries) => {
+    if (!document.body.classList.contains("site-open")) return;
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         entry.target.classList.add("is-visible");
@@ -62,6 +80,7 @@ const revealObserver = new IntersectionObserver(
 document.querySelectorAll(".reveal").forEach((element) => revealObserver.observe(element));
 
 function revealVisibleElements() {
+  if (!document.body.classList.contains("site-open")) return;
   const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
   document.querySelectorAll(".reveal:not(.is-visible)").forEach((element) => {
     const rect = element.getBoundingClientRect();
