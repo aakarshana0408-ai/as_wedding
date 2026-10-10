@@ -50,12 +50,15 @@ a {
 }
 
 .intro {
+  --intro-inset: clamp(1rem, 4vw, 3rem);
   position: fixed;
   inset: 0;
+  height: 100dvh;
   z-index: 20;
   display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   place-items: center;
-  padding: clamp(1rem, 4vw, 3rem);
+  padding: var(--intro-inset);
   background:
     radial-gradient(circle at 50% 20%, rgba(244, 213, 140, 0.28), transparent 28rem),
     linear-gradient(135deg, #22050b 0%, #5b0e1d 48%, #160305 100%);
@@ -70,7 +73,10 @@ a {
 
 .intro-frame {
   position: relative;
-  width: min(100%, calc((100svh - 4rem) * 9 / 16));
+  width: min(100%, calc((100dvh - 2 * var(--intro-inset)) * 9 / 16));
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
   aspect-ratio: 9 / 16;
   overflow: hidden;
   border: 1px solid rgba(244, 213, 140, 0.62);
@@ -1489,14 +1495,11 @@ dd {
 
 @media (max-width: 820px) {
   .intro {
-    padding: 0;
+    --intro-inset: max(1rem, env(safe-area-inset-top), env(safe-area-inset-bottom));
     background: #22050b;
   }
 
   .intro-frame {
-    width: 100%;
-    min-height: 100svh;
-    aspect-ratio: auto;
     border: 0;
   }
 
