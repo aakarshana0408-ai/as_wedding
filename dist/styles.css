@@ -70,8 +70,8 @@ a {
 
 .intro-frame {
   position: relative;
-  width: min(100%, 1280px);
-  aspect-ratio: 16 / 9;
+  width: min(100%, calc((100svh - 4rem) * 9 / 16));
+  aspect-ratio: 9 / 16;
   overflow: hidden;
   border: 1px solid rgba(244, 213, 140, 0.62);
   background:
@@ -99,7 +99,8 @@ a {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: #22050b;
 }
 
 .video-placeholder {
