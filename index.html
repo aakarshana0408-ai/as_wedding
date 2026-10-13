@@ -1,216 +1,28 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>P. Selvendhiran & R. Asmitha | Wedding Invitation</title>
-    <meta
-      name="description"
-      content="A Tamil wedding invitation for P. Selvendhiran and R. Asmitha, Friday, 20 November 2026."
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Great+Vibes&family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23721024'/%3E%3Cpath d='M32 9c7 9 11 16 11 25 0 8-5 14-11 14S21 42 21 34c0-9 4-16 11-25Z' fill='%23f2c15c'/%3E%3Cpath d='M19 52h26M24 45h16' stroke='%23fff2cf' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='34' r='5' fill='%23721024'/%3E%3C/svg%3E"
-    />
-    <link rel="stylesheet" href="styles.css?v=intro-fade-3" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f8f3e9" />
+    <meta name="description" content="A Tamil wedding invitation." />
+    <title>Wedding Invitation</title>
+    <link rel="preload" href="./assets/fonts/great-vibes.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="preload" href="./assets/fonts/cormorant-regular.ttf" as="font" type="font/ttf" crossorigin />
   </head>
   <body>
-    <div class="intro" id="intro" aria-label="Wedding invitation video intro">
-      <div class="intro-frame">
-        <video
-          id="introVideo"
-          class="intro-video"
-          muted
-          playsinline
-          autoplay
-          preload="metadata"
-          aria-label="Wedding invitation video"
-        >
-          <source src="assets/wedding-intro.mp4?v=899a347d" type="video/mp4" />
-        </video>
-        <div class="video-placeholder" id="videoPlaceholder">
-          <span class="eyebrow">Opening Film</span>
-          <p>Place the wedding invitation video here</p>
-        </div>
-      </div>
-    </div>
-
-    <main class="site-shell is-hidden" id="site">
-      <header class="topbar" aria-label="Invitation header">
-        <a href="#home">S <span>&amp;</span> A</a>
-        <a class="menu-lines" href="#familyTitle" aria-label="Go to invitation">
-          <span></span><span></span><span></span>
-        </a>
-      </header>
-
-      <section class="section hero" id="home" aria-labelledby="heroTitle">
-        <div class="ornate-border"></div>
-        <div class="hero-card invitation-title-card reveal">
-          <img class="stationery-ornament" src="assets/tamil-gold-foil-ornament.png" alt="" aria-hidden="true" />
-          <h1 id="heroTitle" class="visually-hidden">Wedding invitation for P. Selvendhiran and R. Asmitha</h1>
-          <div class="invitation-stack" aria-labelledby="heroTitle">
-            <p class="formal-kicker">
-              <span>WITH THE BLESSINGS OF</span>
-              <span>OUR PARENTS AND ELDERS</span>
-            </p>
-            <p class="formal-kicker invite-line">
-              <span>WE JOYFULLY INVITE YOU TO</span>
-              <span>CELEBRATE THE WEDDING OF</span>
-            </p>
-            <p class="calligraphy-name">P. Selvendhiran</p>
-            <p class="relation-label">SON OF</p>
-            <p class="parent-line">C. PRIYAGARAN &amp; P. SANTHI</p>
-            <div class="weds-flourish" aria-label="weds">
-              <span></span>
-              <em>weds</em>
-              <span></span>
-            </div>
-            <p class="calligraphy-name bride-name">R. Asmitha</p>
-            <p class="relation-label">DAUGHTER OF</p>
-            <p class="parent-line">C. RAVICHANDRAN &amp; R. SUMATHI</p>
-          </div>
-        </div>
-        <a class="scroll-indicator" href="#couple" aria-label="Scroll to explore">
-          Scroll <span aria-hidden="true">↓</span>
-        </a>
-      </section>
-
-      <section class="section couple-section" id="couple" aria-labelledby="coupleTitle">
-        <div class="section-heading reveal">
-          <p class="scriptline">Together</p>
-          <h2 id="coupleTitle">Bride &amp; Groom</h2>
-        </div>
-        <div class="couple-grid">
-          <article class="person-card reveal slide-left">
-            <div class="card-bells" aria-hidden="true"><span></span><span></span></div>
-            <div class="portrait-placeholder" aria-label="Groom portrait placeholder">
-              <span>Groom Portrait</span>
-            </div>
-            <p class="role">The Groom</p>
-            <h3>P. Selvendhiran, B.E.</h3>
-          </article>
-
-          <div class="rings reveal" aria-hidden="true">
-            <span></span>
-            <span></span>
-          </div>
-
-          <article class="person-card reveal slide-right">
-            <div class="card-bells" aria-hidden="true"><span></span><span></span></div>
-            <div class="portrait-placeholder" aria-label="Bride portrait placeholder">
-              <span>Bride Portrait</span>
-            </div>
-            <p class="role">The Bride</p>
-            <h3>R. Asmitha, M.Sc., MS (UK)</h3>
-          </article>
-        </div>
-      </section>
-
-      <section class="section love-transition" aria-labelledby="loveTitle">
-        <div class="gold-particles" aria-hidden="true"></div>
-        <div class="poem-card reveal">
-          <h2 id="loveTitle" class="visually-hidden">Wedding Story</h2>
-          <p>A little bit of fate, a lot of love, and a lifetime ahead.</p>
-        </div>
-      </section>
-
-      <section class="section family-section" aria-labelledby="familyTitle">
-        <div class="invitation-letter" id="familyTitle">
-          <div class="family-grid">
-            <article class="family-card">
-              <p class="role">Parents of the Groom</p>
-              <h3>Mr. C. Priyagaran</h3>
-              <h3>Mrs. P. Santhi</h3>
-            </article>
-            <div class="family-divider" aria-hidden="true">
-              <span></span>
-              <div class="rings slim-rings">
-                <i></i>
-                <i></i>
-              </div>
-              <span></span>
-            </div>
-            <article class="family-card">
-              <p class="role">Parents of the Bride</p>
-              <h3>Mr. C. Ravichandran</h3>
-              <h3>Mrs. R. Sumathi</h3>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="section wedding-moment" aria-labelledby="weddingTitle">
-        <div class="moment-rings reveal" aria-hidden="true">
-          <span></span>
-          <span></span>
-        </div>
-        <div class="temple-panel reveal">
-          <p class="invite-copy small">Some beginnings are worth celebrating.</p>
-          <h2 id="weddingTitle">The Wedding</h2>
-          <p class="date-only">Friday, 20 November 2026</p>
-          <p>4:30 AM &ndash; 6:00 AM</p>
-          <p>Arulmigu Perumal Temple</p>
-        </div>
-      </section>
-
-      <section class="section reception-section" aria-labelledby="receptionTitle">
-        <div class="garland reveal" aria-hidden="true">
-          <span></span><span></span><span></span><span></span><span></span>
-        </div>
-        <div class="reception-card reveal">
-          <p class="scriptline">Celebrate With Us</p>
-          <h2 id="receptionTitle">Reception</h2>
-          <p class="time">5:00 PM onwards</p>
-          <p>Ganesan Royal Palace (A/C)</p>
-          <p>Thuraiyur Salai, Perambalur</p>
-        </div>
-      </section>
-
-      <section class="section venue-section" aria-labelledby="venueTitle">
-        <div class="venue-shell reveal">
-          <div class="section-heading">
-            <p class="role">Venue Location</p>
-            <h2 id="venueTitle">Find Your Way to Us</h2>
-          </div>
-          <div class="venue-card">
-            <p class="pin" aria-hidden="true">📍</p>
-            <article>
-              <p class="role">Wedding</p>
-              <h3>Arulmigu Perumal Temple</h3>
-            </article>
-            <article>
-              <p class="role">Reception</p>
-              <h3>Ganesan Royal Palace (A/C)</h3>
-              <p>Thuraiyur Salai, Perambalur</p>
-            </article>
-            <div class="qr-placeholder large" aria-label="QR code placeholder"><span>QR</span></div>
-            <a class="location-button" href="#" aria-label="Scan or tap to navigate">Scan or Tap to Navigate</a>
-          </div>
-        </div>
-      </section>
-
-      <section class="section final-section" aria-labelledby="finalTitle">
-        <div class="petal-layer" id="petalLayer" aria-hidden="true"></div>
-        <div class="final-card reveal">
-          <p class="invite-copy small">The beginning of all the days to come.</p>
-          <h2 id="finalTitle">P. Selvendhiran &amp; R. Asmitha</h2>
-          <p class="final-date">20 &bull; 11 &bull; 2026</p>
-          <div class="real-lamp-stage" aria-hidden="true">
-            <span class="lamp-halo"></span>
-            <img class="real-lamp" src="assets/kuthuvilakku-realistic.png" alt="" />
-            <span class="heat-shimmer"></span>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <script src="script.js?v=intro-fade-3"></script>
+    <div id="root"></div>
+    <noscript>This invitation needs JavaScript enabled to open.</noscript>
+    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Static servers need the compiled invitation, not the React source entry.
+      const sourceEntry = document.querySelector('script[src="/src/main.jsx"]');
+      const viteClient = document.querySelector('script[src*="/@vite/client"]');
+      if (sourceEntry && !viteClient) {
+        const invitation = new URL('./dist/index.html', window.location.href);
+        invitation.search = window.location.search;
+        invitation.hash = window.location.hash;
+        window.location.replace(invitation.href);
+      }
+    </script>
   </body>
 </html>
