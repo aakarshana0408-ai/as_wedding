@@ -60,7 +60,7 @@ export default function WeddingSection() {
                   {qr ? <img src={qr} width="768" height="768" alt={`QR code for ${venueAddress} in Google Maps`} />
                     : <span className="qr-loading" role="status">{qrError ? 'Open in Google Maps' : 'Preparing location'}</span>}
                 </a>
-                <p className="qr-caption">SCAN TO FIND THE VENUE</p>
+                <p className="qr-caption">SCAN OR CLICK TO VIEW THE VENUE</p>
               </div>
             </div>
             <div data-reveal-step="2"><WeddingDivider className="wedding-details-divider--last" /></div>

@@ -54,7 +54,7 @@ export default function IntroVideo({ onReveal, onComplete, leaving = false }) {
   useEffect(() => {
     if (!leaving) return;
     started.current = true;
-    const timer = window.setTimeout(complete, reduced ? 50 : 950);
+    const timer = window.setTimeout(complete, reduced ? 50 : 700);
     return () => window.clearTimeout(timer);
   }, [leaving, reduced, complete]);
 
