@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { wedding } from '../config/wedding';
 
-const links = [['Invitation', '#invitation-message'], ['Celebrations', '#wedding']];
+const links = [['Invitation', '#invitation'], ['Celebrations', '#wedding']];
 export default function Header({ active = false }) {
   const [open, setOpen] = useState(false);
   const [logoVisible, setLogoVisible] = useState(false);
@@ -41,7 +41,7 @@ export default function Header({ active = false }) {
   return <header className={`invitation-header ${logoVisible ? 'is-past-opening' : ''}`}>
     <a className={`header-initials ${logoVisible ? 'is-visible' : ''}`} href="#invitation"
       aria-label="Back to the invitation" aria-hidden={!logoVisible} tabIndex={logoVisible ? 0 : -1}>
-      {wedding.bride.initial} <span>&amp;</span> {wedding.groom.initial}
+      <span>{wedding.groom.initial}</span>{' '}<span className="header-ampersand">&amp;</span>{' '}<span>{wedding.bride.initial}</span>
     </a>
     <button className="menu-button icon-button" aria-label={open ? 'Close menu' : 'Open menu'} title={open ? 'Close menu' : 'Open menu'}
       aria-expanded={open} aria-controls="invitation-navigation" onClick={() => setOpen(value => !value)}>

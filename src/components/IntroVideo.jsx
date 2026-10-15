@@ -4,26 +4,34 @@ import { wedding } from '../config/wedding';
 import WeddingMonogram from './WeddingMonogram';
 import useReducedMotion from '../hooks/useReducedMotion';
 
-export default function IntroVideo({ onReveal, onComplete }) {
+export default function IntroVideo({ onReveal, onComplete, leaving = false }) {
   const videoRef = useRef(null);
   const started = useRef(false);
+  const completed = useRef(false);
   const [mode, setMode] = useState(wedding.media.introVideo ? 'video' : 'fallback');
   const [playing, setPlaying] = useState(false);
-  const [leaving, setLeaving] = useState(false);
   const reduced = useReducedMotion();
 
-  const enter = useCallback(async () => {
-    if (started.current) return;
+  const enter = useCallback(() => {
+    if (started.current || leaving) return;
     started.current = true;
-    // Hold the last film frame while the opening's fonts and artwork prepare.
-    const artwork = Array.from(document.querySelectorAll('.opening img'), image => image.decode().catch(() => {}));
-    await Promise.race([
-      Promise.all([document.fonts.ready, ...artwork]),
-      new Promise(resolve => window.setTimeout(resolve, 1200)),
-    ]);
     onReveal();
-    requestAnimationFrame(() => requestAnimationFrame(() => setLeaving(true)));
-  }, [onReveal]);
+  }, [leaving, onReveal]);
+
+  const complete = useCallback(() => {
+    if (completed.current) return;
+    completed.current = true;
+    onComplete();
+  }, [onComplete]);
+
+  useEffect(() => {
+    // Prepare only the opening's critical artwork and type while the film plays.
+    for (const image of document.querySelectorAll('.opening img:not([loading="lazy"])')) {
+      image.decode().catch(() => {});
+    }
+    document.fonts.load('1em "Great Vibes"').catch(() => {});
+    document.fonts.load('1em "Cormorant Garamond"').catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (mode !== 'video') return;
@@ -45,9 +53,10 @@ export default function IntroVideo({ onReveal, onComplete }) {
 
   useEffect(() => {
     if (!leaving) return;
-    const timer = window.setTimeout(onComplete, reduced ? 50 : 3300);
+    started.current = true;
+    const timer = window.setTimeout(complete, reduced ? 50 : 950);
     return () => window.clearTimeout(timer);
-  }, [leaving, reduced, onComplete]);
+  }, [leaving, reduced, complete]);
 
   useEffect(() => {
     if (mode !== 'video' || playing) return;
@@ -59,7 +68,7 @@ export default function IntroVideo({ onReveal, onComplete }) {
 
   return <div className={`intro-overlay ${leaving ? 'is-leaving' : ''}`} aria-label="Wedding opening film"
     onTransitionEnd={event => {
-      if (leaving && event.target === event.currentTarget && event.propertyName === 'opacity') onComplete();
+      if (leaving && event.target === event.currentTarget && event.propertyName === 'opacity') complete();
     }}>
     {mode !== 'fallback' && <div className="intro-film">
       <video ref={videoRef} src={wedding.media.introVideo} muted playsInline autoPlay preload="auto"

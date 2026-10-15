@@ -2,13 +2,15 @@ const asset = (filename) => `${import.meta.env?.BASE_URL ?? '/'}${filename}`;
 
 export const wedding = {
   groom: {
-    name: 'P. Selvendhiran', initial: 'S',
-    parents: ['Mr. C. Priyagaran', 'Mrs. P. Santhi'],
+    name: 'P. Selvendran', initial: 'S',
+    parents: ['Mr. C. Prabakaran', 'Mrs. P. Shanthi'],
+    familyLocation: 'Perambalur, Tamil Nadu, India',
     nativePlace: 'Aranarai, Perambalur District & Taluk',
   },
   bride: {
     name: 'R. Asmitha', initial: 'A',
     parents: ['Mr. C. Ravichandran', 'Mrs. R. Sumathi'],
+    familyLocation: 'Namakkal, Tamil Nadu, India',
     nativePlace: 'Okkilipatti Village, Tiruchengode Taluk, Namakkal District',
   },
   date: '2026-11-20',
@@ -22,26 +24,34 @@ export const wedding = {
     address: 'Thuraiyur Salai, Perambalur', googleMapsUrl: null,
   },
   media: {
-    introVideo: asset('wedding-intro-final.mp4'), ornament: asset('tamil-gold-foil-ornament.png'),
+    introVideo: asset('wedding-intro-families-3.mp4'), ornament: asset('tamil-gold-foil-ornament.png'),
     ceremonyBackdrop: asset('tamil-wedding-backdrop.png'), lamp: asset('kuthuvilakku-realistic.png'),
     rings: asset('wedding-rings-jasmine.png'), floral: asset('jasmine-thoranam.png'), petal: asset('jasmine-petal.png'),
     paper: asset('handmade-ivory-paper.png'), silk: asset('wine-silk-texture.png'),
-    monogram: asset('as-botanical-gold-monogram.png'),
-    openingMonogram: asset('as-jasmine-gold-monogram.png'),
+    receptionLamp: asset('reception-hanging-brass-lamp.png'),
+    weddingDetailsBackdrop: asset('wedding-details-reference-backdrop.png'),
+    monogram: asset('sa-ornate-gold-monogram-transparent.png'),
+    monogramLayers: {
+      circle: asset('sa-ornate-reveal-circle.png'), branches: asset('sa-ornate-reveal-branches.png'),
+      flowers: asset('sa-ornate-reveal-flowers.png'), s: asset('sa-ornate-reveal-s.png'), a: asset('sa-ornate-reveal-a.png'),
+    },
     openingBackdrop: asset('tamil-opening-reference.png'),
     openingBackdropWide: asset('tamil-opening-reference-wide.png'),
     openingBackdropTablet: asset('tamil-opening-reference-tablet.png'),
     openingTemple: asset('dravidian-temple-watermark.png'),
     openingCorner: asset('lotus-gold-corner.png'), openingHalo: asset('lotus-embossed-halo.png'),
+    closingCouple: asset('closing-watercolor-couple.png'),
+    closingGarland: asset('closing-watercolor-garland.png'),
+    closingLeaves: asset('closing-watercolor-banana-leaves.png'),
+    closingPetal: asset('closing-watercolor-petal.png'),
   },
   gallery: { enabled: false, images: [] },
   countdown: { heading: 'Counting the moments until forever', completeMessage: 'The celebration begins' },
   story: {
     beginnings: ['It started with two people.', 'It grew into a beautiful story.', 'And now, it becomes a lifetime.'],
-    invitation: 'Together with the blessings of our families and elders, we joyfully invite you to join us as we begin our sacred journey together.',
-    parentsInvitation: 'Together with the blessings of our beloved parents, we joyfully invite you to join us as we begin our sacred journey together.',
+    parentsInvitation: 'With joyful hearts, we invite you to celebrate our wedding.',
     love: 'A little bit of fate, a lot of love, and a lifetime ahead.',
-    celebration: 'Some beginnings are worth celebrating.', closing: 'The beginning of all the days to come.',
+    celebration: 'Some beginnings are worth celebrating.',
   },
 };
 

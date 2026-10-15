@@ -1,27 +1,37 @@
-import { wedding, compactWeddingDate } from '../config/wedding';
-import { DecorativeImage, Petals, MaterialSurface, Ornament } from './Decorations';
+import { wedding, formatWeddingDate, getWeddingDateParts } from '../config/wedding';
+import { DecorativeImage, MaterialSurface } from './Decorations';
 import Reveal from './Reveal';
 
 export default function ClosingSection() {
-  return <footer data-scroll-scene className="closing-section" aria-label={wedding.story.closing}>
-    <MaterialSurface silk />
-    <div className="closing-frame" aria-hidden="true">
-      {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map(corner =>
-        <DecorativeImage key={corner} src={wedding.media.openingCorner}
-          className={`closing-corner closing-corner--${corner}`} />)}
-      {['left', 'right'].map(side => <div key={side} className={`closing-side closing-side--${side}`}>
-        <Ornament />
+  const date = getWeddingDateParts();
+  const month = formatWeddingDate(wedding.date, { day: undefined, month: 'short', year: undefined }).toUpperCase();
+  return <footer data-scroll-scene className="closing-section" aria-label="Wedding announcement">
+    <MaterialSurface />
+    <div className="closing-botanicals" aria-hidden="true">
+      {['left', 'right'].map(side => <div key={side} className={`closing-edge closing-edge--${side}`}>
+        <DecorativeImage src={wedding.media.closingGarland} className="closing-garland" />
+        <DecorativeImage src={wedding.media.closingLeaves} className="closing-leaves" />
       </div>)}
+      {[0, 1, 2, 3, 4].map(index => <DecorativeImage key={index} src={wedding.media.closingPetal}
+        className={`closing-painted-petal closing-painted-petal--${index}`} />)}
     </div>
-    <DecorativeImage src={wedding.media.floral} className="closing-floral" parallax={2} />
-    <Petals count={4} />
-    <div className="closing-composition">
-      <Reveal className="closing-lamp-mount" delay={120}><DecorativeImage src={wedding.media.lamp} className="closing-lamp" /></Reveal>
-      <Reveal className="closing-copy" group delay={160}><p className="closing-quote" data-reveal-step="0">{wedding.story.closing}</p>
-        <span className="fine-rule" aria-hidden="true" />
-        <p className="closing-names" data-reveal-step="1"><span>{wedding.groom.name}</span><i>&amp;</i><span>{wedding.bride.name}</span></p>
-        <p className="closing-date" data-reveal-step="2"><time dateTime={wedding.date}>{compactWeddingDate()}</time></p>
-      </Reveal>
-    </div>
+    <Reveal className="closing-attire" delay={80}>
+      <DecorativeImage src={wedding.media.closingCouple} className="closing-attire-image" />
+    </Reveal>
+    <Reveal className="closing-copy" group delay={180}>
+      <p className="closing-save-date" data-reveal-step="0">Save the Date</p>
+      <p className="closing-name closing-groom" data-reveal-step="1">{wedding.groom.name.toUpperCase()}</p>
+      <p className="closing-connector" data-reveal-step="2">and</p>
+      <p className="closing-name closing-bride" data-reveal-step="3">{wedding.bride.name.toUpperCase()}</p>
+      <p className="closing-married" data-reveal-step="4">ARE GETTING MARRIED</p>
+      <p className="closing-date" data-reveal-step="5">
+        <time dateTime={wedding.date} aria-label={formatWeddingDate()}>
+          <span>{month}</span><span className="closing-date-separator" aria-hidden="true"> | </span>
+          <span className="closing-date-day">{date.day}</span><span className="closing-date-separator" aria-hidden="true"> | </span><span>{date.year}</span>
+        </time>
+      </p>
+      <p className="closing-weekday" data-reveal-step="6">{date.weekday.toUpperCase()}</p>
+      <p className="closing-muhurtham" data-reveal-step="7">{wedding.ceremony.time}</p>
+    </Reveal>
   </footer>;
 }

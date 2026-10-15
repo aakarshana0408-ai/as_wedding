@@ -14,27 +14,29 @@ import useCinematicScroll from './hooks/useCinematicScroll';
 export default function App() {
   const siteRef = useRef(null);
   const [phase, setPhase] = useState('intro');
-  const [revealing, setRevealing] = useState(false);
-  useCinematicScroll(siteRef, phase === 'open');
-  const reveal = useCallback(() => setPhase('transition'), []);
-  const finish = useCallback(() => { setPhase('open'); setRevealing(true); }, []);
+  const active = phase !== 'intro';
+  useCinematicScroll(siteRef, active);
+  const reveal = useCallback(() => setPhase(current => current === 'intro' ? 'transition' : current), []);
+  const finish = useCallback(() => setPhase('open'), []);
   useEffect(() => {
     document.title = `${wedding.groom.name} weds ${wedding.bride.name} | Wedding Invitation`;
     document.querySelector('meta[name="description"]').content = `${wedding.groom.name} weds ${wedding.bride.name}. ${formatWeddingDate()}. A Tamil wedding invitation.`;
   }, []);
   useEffect(() => {
-    document.body.classList.toggle('invitation-locked', phase !== 'open');
+    document.body.classList.toggle('invitation-locked', !active);
     return () => document.body.classList.remove('invitation-locked');
-  }, [phase]);
+  }, [active]);
   return <>
-    <a href="#main-invitation" className="skip-link" onClick={finish}>Skip to invitation</a>
-    {phase !== 'open' && <IntroVideo onReveal={reveal} onComplete={finish} />}
-    <div ref={siteRef} className={`invitation-site ${phase === 'intro' ? 'is-waiting' : 'is-ready'}`} inert={phase !== 'open'}>
-      <Header active={phase === 'open'} /><main id="main-invitation">
-        <MonogramReveal active={revealing} />
-        {phase === 'open' && <><LoveSection /><ParentsSection /><WeddingSection /><ReceptionSection /><PhotoGallery /></>}
+    <a href="#main-invitation" className="skip-link" onClick={event => {
+      if (phase !== 'open') { event.preventDefault(); reveal(); }
+    }}>Skip to invitation</a>
+    {phase !== 'open' && <IntroVideo leaving={active} onReveal={reveal} onComplete={finish} />}
+    <div ref={siteRef} className={`invitation-site ${active ? 'is-ready' : 'is-waiting'}`} inert={!active}>
+      <Header active={active} /><main id="main-invitation">
+        <MonogramReveal active={active} />
+        <LoveSection /><ParentsSection /><WeddingSection /><ReceptionSection /><PhotoGallery />
       </main>
-      {phase === 'open' && <ClosingSection />}
+      <ClosingSection />
     </div>
   </>;
 }

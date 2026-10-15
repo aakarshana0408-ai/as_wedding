@@ -15,7 +15,7 @@ export default function MonogramReveal({ active }) {
       <Petals count={4} />
       <div className="opening-inner">
         <div className="opening-monogram-stage">
-          <WeddingMonogram artwork={wedding.media.openingMonogram} referenceFrame />
+          <WeddingMonogram />
         </div>
         <div className="opening-signature">
           <h1 id="couple-names" className="opening-names">
@@ -32,6 +32,9 @@ export default function MonogramReveal({ active }) {
             <time dateTime={wedding.date}>{formatWeddingDate().toUpperCase()}</time>
             <div className="date-engraving date-engraving--lower" aria-hidden="true"><Ornament eager /></div>
           </div>
+          <a className="scroll-cue" href="#love" aria-label="Scroll to explore the invitation">
+            <span>SCROLL TO EXPLORE</span><ArrowDown size={17} strokeWidth={1} aria-hidden="true" />
+          </a>
         </div>
         <Reveal className="opening-message" group enabled={active}>
           <p className="opening-story" data-reveal-step="0">
@@ -41,11 +44,5 @@ export default function MonogramReveal({ active }) {
         </Reveal>
       </div>
     </div>
-    <Reveal id="invitation-message" className="opening-invitation" group enabled={active}>
-      <p className="invitation-copy" data-reveal-step="0">{wedding.story.invitation}</p>
-      <a className="scroll-cue" href="#wedding" aria-label="Discover our celebration">
-        <span>Discover our celebration</span><ArrowDown size={17} strokeWidth={1} aria-hidden="true" />
-      </a>
-    </Reveal>
   </section>;
 }
