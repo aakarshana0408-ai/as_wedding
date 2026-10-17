@@ -4,7 +4,7 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
   }
   let attempted = false;
   let disposed = false;
-  let completed = false;
+  let enabled = true;
   let retryOnInteraction = false;
   let request = 0;
   let savedPosition = start;
@@ -19,28 +19,40 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
   const save = () => {
     if (audio.currentTime >= start) savedPosition = Math.min(end, audio.currentTime);
   };
-  const playing = () => { if (!audio.paused) report('playing'); };
-  const paused = () => { save(); request += 1; report(completed || audio.ended ? 'ended' : 'paused'); };
-  const ended = () => {
-    completed = true;
-    savedPosition = end;
-    request += 1;
-    if (!audio.paused) audio.pause();
-    report('ended');
+  const playing = () => {
+    if (audio.paused) return;
+    if (!enabled) { audio.pause(); return; }
+    retryOnInteraction = false;
+    report('playing');
   };
-  const timeUpdate = () => { save(); if (audio.currentTime >= end) ended(); };
+  const paused = () => {
+    if (!audio.paused || audio.ended) return;
+    save();
+    request += 1;
+    retryOnInteraction = enabled;
+    report('paused');
+  };
+  const repeat = () => {
+    if (disposed || !enabled || audio.currentTime < end) return;
+    // Repeat only the selected passage, never the file's silent first 20 seconds.
+    savedPosition = start;
+    pendingPosition = start;
+    cue();
+    if (audio.paused) void play();
+  };
+  const timeUpdate = () => { save(); repeat(); };
   const unavailable = () => { save(); request += 1; report('unavailable'); };
   audio.loop = false;
   audio.addEventListener('loadedmetadata', cue);
   audio.addEventListener('playing', playing);
   audio.addEventListener('pause', paused);
-  audio.addEventListener('ended', ended);
+  audio.addEventListener('ended', repeat);
   audio.addEventListener('timeupdate', timeUpdate);
   audio.addEventListener('error', unavailable);
   cue();
 
   function play() {
-    if (disposed || completed || audio.ended) return Promise.resolve(false);
+    if (disposed || !enabled) return Promise.resolve(false);
     const current = ++request;
     const failed = error => {
       if (!disposed && current === request && error.name !== 'AbortError') {
@@ -51,10 +63,11 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
     };
     try {
       retryOnInteraction = false;
+      if (audio.currentTime >= end) { savedPosition = start; pendingPosition = start; }
       if (audio.error) { pendingPosition = savedPosition; audio.load(); }
       cue();
       return Promise.resolve(audio.play()).then(() => {
-        if (disposed || current !== request || audio.paused) return false;
+        if (disposed || !enabled || current !== request || audio.paused) return false;
         report('playing');
         return true;
       }, failed);
@@ -65,15 +78,16 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
 
   function pause() {
     if (disposed) return;
+    enabled = false;
     retryOnInteraction = false;
     save();
     request += 1;
     audio.pause();
-    report(completed ? 'ended' : 'paused');
+    report('paused');
   }
 
   function startOnce() {
-    if (disposed || attempted || completed || audio.ended) return Promise.resolve(false);
+    if (disposed || attempted || !enabled) return Promise.resolve(false);
     attempted = true;
     return play();
   }
@@ -82,28 +96,24 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
     startOnce,
     pause,
     resumeFromInteraction() {
-      if (disposed || completed || audio.ended || !retryOnInteraction || !audio.paused) return Promise.resolve(false);
+      if (disposed || !enabled || !retryOnInteraction || !audio.paused) return Promise.resolve(false);
       return play();
     },
     async startIntro(video, isCurrent = () => true) {
       if (disposed || !isCurrent()) return false;
       // Audible autoplay must never hold up the muted film.
       void startOnce();
-      try {
-        await video.play();
-        return !disposed && isCurrent();
-      } catch (error) {
-        if (!disposed && isCurrent()) pause();
-        throw error;
-      }
+      await video.play();
+      return !disposed && isCurrent();
     },
     toggle() {
-      if (disposed || completed || audio.ended) return Promise.resolve(false);
+      if (disposed) return Promise.resolve(false);
       attempted = true;
       if (!audio.paused) {
         pause();
         return Promise.resolve(false);
       }
+      enabled = true;
       return play();
     },
     destroy() {
@@ -113,7 +123,7 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
       audio.removeEventListener('loadedmetadata', cue);
       audio.removeEventListener('playing', playing);
       audio.removeEventListener('pause', paused);
-      audio.removeEventListener('ended', ended);
+      audio.removeEventListener('ended', repeat);
       audio.removeEventListener('timeupdate', timeUpdate);
       audio.removeEventListener('error', unavailable);
       audio.pause();

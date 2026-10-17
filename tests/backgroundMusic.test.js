@@ -15,6 +15,7 @@ class AudioStub extends EventTarget {
   play() {
     this.plays += 1;
     this.paused = false;
+    this.ended = false;
     this.dispatchEvent(new Event('playing'));
     return Promise.resolve();
   }
@@ -29,7 +30,7 @@ class AudioStub extends EventTarget {
 const segment = { start: 20, end: 80 };
 const create = (audio, onChange) => createBackgroundMusic(audio, onChange, segment);
 
-test('music starts on request only once and never loops', async () => {
+test('music cues once without enabling a whole-file loop over the silent lead-in', async () => {
   const audio = new AudioStub();
   const states = [];
   const music = create(audio, state => states.push(state));
@@ -76,7 +77,7 @@ test('blocked playback is handled and the toggle can retry without an unhandled 
   music.destroy();
 });
 
-test('music stops at source 01:20 and the toggle never rewinds a completed segment', async () => {
+test('music repeats the selected passage after natural completion and the toggle remains usable', async () => {
   const audio = new AudioStub();
   const states = [];
   const music = create(audio, state => states.push(state));
@@ -84,13 +85,21 @@ test('music stops at source 01:20 and the toggle never rewinds a completed segme
   audio.currentTime = 80;
   audio.ended = true;
   audio.pause();
+  assert.equal(states.at(-1), 'playing', 'the natural end must not flash a muted state');
   audio.dispatchEvent(new Event('ended'));
-  assert.equal(states.at(-1), 'ended');
+  assert.equal(states.at(-1), 'playing');
+  assert.equal(audio.currentTime, 20);
+  assert.equal(audio.paused, false);
+  assert.equal(audio.plays, 2);
+  assert.equal(audio.loads, 0);
   await music.startOnce();
-  assert.equal(audio.plays, 1);
+  assert.equal(audio.plays, 2);
+  audio.currentTime = 26.75;
   await music.toggle();
-  assert.equal(audio.currentTime, 80);
-  assert.equal(audio.plays, 1);
+  assert.equal(audio.paused, true);
+  await music.toggle();
+  assert.equal(audio.currentTime, 26.75);
+  assert.equal(audio.paused, false);
   music.destroy();
 });
 
@@ -141,14 +150,18 @@ test('repeated gestures do not duplicate a pending autoplay retry', async () => 
   music.destroy();
 });
 
-test('a finished or disposed segment cannot be restarted by a page interaction', async () => {
+test('a deliberate pause at the segment boundary cannot be undone by late end events or page interactions', async () => {
   const audio = new AudioStub();
   const music = create(audio, () => {});
-  audio.play = () => Promise.reject(Object.assign(new Error('Blocked'), { name: 'NotAllowedError' }));
   await music.startOnce();
+  music.pause();
   audio.currentTime = 80;
+  audio.ended = true;
   audio.dispatchEvent(new Event('timeupdate'));
+  audio.dispatchEvent(new Event('ended'));
   assert.equal(await music.resumeFromInteraction(), false);
+  assert.equal(audio.currentTime, 80);
+  assert.equal(audio.plays, 1);
   music.destroy();
   assert.equal(await music.resumeFromInteraction(), false);
 });
@@ -266,18 +279,66 @@ test('late video rejection after cleanup cannot pause a newer audio session', as
   music.destroy();
 });
 
-test('source boundaries are enforced even if the media has trailing content', async () => {
+test('an intro playback failure never stops the independent music player', async () => {
+  const audio = new AudioStub();
+  const states = [];
+  const music = create(audio, state => states.push(state));
+  await assert.rejects(music.startIntro({ play: () => Promise.reject(new Error('Video unavailable')) }), /Video unavailable/);
+  assert.equal(audio.paused, false);
+  assert.equal(audio.pauses, 0);
+  assert.equal(states.at(-1), 'playing');
+  music.destroy();
+});
+
+test('a browser playback interruption can resume on an interaction without overriding a manual mute', async () => {
+  const audio = new AudioStub();
+  const music = create(audio, () => {});
+  await music.startOnce();
+  audio.currentTime = 35.625;
+  audio.pause();
+  assert.equal(await music.resumeFromInteraction(), true);
+  assert.equal(audio.currentTime, 35.625);
+  music.pause();
+  assert.equal(await music.resumeFromInteraction(), false);
+  assert.equal(audio.paused, true);
+  music.destroy();
+});
+
+test('source boundaries repeat only the selected passage without pausing or reloading', async () => {
   const audio = new AudioStub();
   const states = [];
   const music = create(audio, state => states.push(state));
   await music.startOnce();
   audio.currentTime = 80;
   audio.dispatchEvent(new Event('timeupdate'));
-  assert.equal(audio.paused, true);
-  assert.equal(states.at(-1), 'ended');
-  await music.toggle();
-  assert.equal(audio.currentTime, 80);
+  assert.equal(audio.paused, false);
+  assert.equal(states.at(-1), 'playing');
+  assert.equal(audio.currentTime, 20);
   assert.equal(audio.plays, 1);
+  assert.equal(audio.pauses, 0);
+  assert.equal(audio.loads, 0);
+  audio.currentTime = 20.4;
+  audio.dispatchEvent(new Event('ended'));
+  assert.equal(audio.currentTime, 20.4, 'a queued end event cannot repeat an already restarted passage');
+  music.destroy();
+});
+
+test('multiple natural repeats preserve the same player and never enter a finished state', async () => {
+  const audio = new AudioStub();
+  const states = [];
+  const music = create(audio, state => states.push(state));
+  await music.startOnce();
+  for (let cycle = 0; cycle < 3; cycle += 1) {
+    audio.currentTime = 80;
+    audio.ended = true;
+    audio.pause();
+    audio.dispatchEvent(new Event('ended'));
+    assert.equal(audio.currentTime, 20);
+    assert.equal(audio.paused, false);
+  }
+  assert.equal(audio.plays, 4);
+  assert.equal(audio.loads, 0);
+  assert.ok(states.every(state => state === 'playing'));
   music.destroy();
 });
 

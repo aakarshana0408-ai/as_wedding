@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Menu, Music2, VolumeX, X } from 'lucide-react';
+import { Menu, Volume2, VolumeX, X } from 'lucide-react';
 import { wedding } from '../config/wedding';
 
 const links = [['Invitation', '#invitation'], ['Celebrations', '#wedding']];
@@ -39,7 +39,7 @@ export default function Header({ active = false, introVisible = false, musicStat
     };
   }, [active, logoVisible]);
   const musicPlaying = musicStatus === 'playing';
-  const musicLabel = musicStatus === 'ended' ? 'Music has finished' : musicPlaying ? 'Pause background music'
+  const musicLabel = musicPlaying ? 'Pause background music'
     : musicStatus === 'unavailable' ? 'Retry background music' : 'Play background music';
   return <header className={`invitation-header ${logoVisible ? 'is-past-opening' : ''} ${introVisible ? 'is-intro' : ''}`}>
     <a className={`header-initials ${logoVisible ? 'is-visible' : ''}`} href="#invitation"
@@ -48,8 +48,8 @@ export default function Header({ active = false, introVisible = false, musicStat
     </a>
     <div className="header-actions">
     <button type="button" className="music-toggle icon-button" onClick={onMusicToggle} aria-label={musicLabel}
-      title={musicLabel} aria-pressed={musicPlaying} disabled={musicStatus === 'ended'}>
-      {musicPlaying ? <Music2 size={18} strokeWidth={1.4} aria-hidden="true" /> : <VolumeX size={18} strokeWidth={1.4} aria-hidden="true" />}
+      title={musicLabel} aria-pressed={musicPlaying}>
+      {musicPlaying ? <Volume2 size={18} strokeWidth={1.4} aria-hidden="true" /> : <VolumeX size={18} strokeWidth={1.4} aria-hidden="true" />}
     </button>
     <button className="menu-button icon-button" disabled={!active} aria-label={open ? 'Close menu' : 'Open menu'} title={open ? 'Close menu' : 'Open menu'}
       aria-expanded={open} aria-controls="invitation-navigation" onClick={() => setOpen(value => !value)}>
