@@ -5,12 +5,17 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
   let attempted = false;
   let disposed = false;
   let enabled = true;
+  let playbackStarted = false;
   let retryOnInteraction = false;
   let request = 0;
   let savedPosition = start;
   let pendingPosition = start;
 
-  const report = status => { if (!disposed) onChange({ status, enabled }); };
+  const report = status => {
+    if (disposed) return;
+    playbackStarted = status === 'playing';
+    onChange({ status, enabled });
+  };
   const cue = () => {
     if (pendingPosition === null || audio.readyState < 1) return;
     audio.currentTime = pendingPosition;
@@ -65,6 +70,7 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
     try {
       retryOnInteraction = false;
       audio.muted = false;
+      report('loading');
       if (audio.currentTime >= end) { savedPosition = start; pendingPosition = start; }
       if (audio.error) { pendingPosition = savedPosition; audio.load(); }
       cue();
@@ -112,7 +118,7 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
     toggle() {
       if (disposed) return Promise.resolve(false);
       attempted = true;
-      if (enabled) {
+      if (playbackStarted && !audio.paused && !audio.muted) {
         pause();
         return Promise.resolve(false);
       }

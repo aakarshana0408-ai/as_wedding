@@ -77,21 +77,49 @@ test('the toggle actually mutes and pauses, then unmutes at the exact paused pos
   music.destroy();
 });
 
-test('the first toggle still mutes when autoplay has not been permitted', async () => {
+test('the first music-button click retries blocked playback instead of muting a silent player', async () => {
   const audio = new AudioStub();
   const states = [];
   const play = audio.play.bind(audio);
   audio.play = () => Promise.reject(Object.assign(new Error('Blocked'), { name: 'NotAllowedError' }));
   const music = createBackgroundMusic(audio, state => states.push(state), segment);
   await music.startOnce();
-  await music.toggle();
-  assert.equal(audio.muted, true);
-  assert.deepEqual(states.at(-1), { status: 'paused', enabled: false });
   audio.play = play;
-  assert.equal(await music.resumeFromInteraction(), false);
   await music.toggle();
   assert.equal(audio.muted, false);
   assert.equal(audio.paused, false);
+  assert.equal(audio.currentTime, 20);
+  assert.deepEqual(states.at(-1), { status: 'playing', enabled: true });
+  music.destroy();
+});
+
+test('playback is not reported ON while the native play promise is still pending', async () => {
+  const audio = new AudioStub();
+  let resolve;
+  audio.play = () => { audio.paused = false; return new Promise(done => { resolve = done; }); };
+  const states = [];
+  const music = createBackgroundMusic(audio, state => states.push(state), segment);
+  const pending = music.startOnce();
+  assert.deepEqual(states.at(-1), { status: 'loading', enabled: true });
+  assert.ok(states.every(state => state.status !== 'playing'));
+  resolve();
+  assert.equal(await pending, true);
+  assert.deepEqual(states.at(-1), { status: 'playing', enabled: true });
+  music.destroy();
+});
+
+test('failed playback remains OFF and can be retried with a single click', async () => {
+  const audio = new AudioStub();
+  const states = [];
+  const play = audio.play.bind(audio);
+  audio.play = () => Promise.reject(Object.assign(new Error('Decoder unavailable'), { name: 'NotSupportedError' }));
+  const music = createBackgroundMusic(audio, state => states.push(state), segment);
+  assert.equal(await music.startOnce(), false);
+  assert.deepEqual(states.at(-1), { status: 'unavailable', enabled: true });
+  assert.ok(states.every(state => state.status !== 'playing'));
+  audio.play = play;
+  assert.equal(await music.toggle(), true);
+  assert.deepEqual(states.at(-1), { status: 'playing', enabled: true });
   music.destroy();
 });
 
@@ -137,8 +165,6 @@ test('blocked playback is handled and the toggle can retry without an unhandled 
   assert.equal(states.at(-1), 'blocked');
   assert.equal(await music.startOnce(), false);
   audio.play = play;
-  await music.toggle();
-  assert.equal(audio.muted, true);
   assert.equal(await music.toggle(), true);
   assert.equal(states.at(-1), 'playing');
   music.destroy();
@@ -240,13 +266,14 @@ test('cleanup pauses playback, removes listeners and ignores a pending play reso
   const states = [];
   const music = create(audio, state => states.push(state));
   const pending = music.startOnce();
+  const beforeCleanup = [...states];
   music.destroy();
   resolve();
   await pending;
   audio.dispatchEvent(new Event('playing'));
   audio.dispatchEvent(new Event('error'));
   assert.equal(audio.paused, true);
-  assert.deepEqual(states, []);
+  assert.deepEqual(states, beforeCleanup);
   assert.equal(await music.toggle(), false);
 });
 
@@ -257,7 +284,7 @@ test('a pause invalidates an in-flight play promise', async () => {
   const states = [];
   const music = create(audio, state => states.push(state));
   const pending = music.startOnce();
-  await music.toggle();
+  music.pause();
   resolve();
   await pending;
   assert.equal(states.at(-1), 'paused');
@@ -271,7 +298,6 @@ test('a transient media error can be retried without resetting other invitation 
   audio.error = {};
   audio.dispatchEvent(new Event('error'));
   assert.equal(states.at(-1), 'unavailable');
-  await music.toggle();
   await music.toggle();
   assert.equal(audio.loads, 1);
   assert.equal(states.at(-1), 'playing');
@@ -406,7 +432,7 @@ test('multiple natural repeats preserve the same player and never enter a finish
   }
   assert.equal(audio.plays, 4);
   assert.equal(audio.loads, 0);
-  assert.ok(states.every(state => state === 'playing'));
+  assert.ok(states.every(state => state === 'loading' || state === 'playing'));
   music.destroy();
 });
 

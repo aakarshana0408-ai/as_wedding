@@ -38,9 +38,12 @@ export default function Header({ active = false, introVisible = false, musicEnab
       window.removeEventListener('scroll', revealLogo);
     };
   }, [active, logoVisible]);
-  const musicLabel = musicEnabled ? 'Mute background music' : 'Unmute background music';
-  const musicTitle = musicEnabled && musicStatus === 'blocked'
-    ? 'Music enabled; playback starts on your first interaction' : musicLabel;
+  const musicPlaying = musicEnabled && musicStatus === 'playing';
+  const musicLabel = musicPlaying ? 'Mute background music'
+    : musicStatus === 'unavailable' ? 'Retry background music'
+      : musicEnabled ? 'Play background music' : 'Unmute background music';
+  const musicTitle = musicStatus === 'loading' ? 'Starting background music'
+    : musicStatus === 'blocked' ? 'Tap to play background music' : musicLabel;
   return <header className={`invitation-header ${logoVisible ? 'is-past-opening' : ''} ${introVisible ? 'is-intro' : ''}`}>
     <a className={`header-initials ${logoVisible ? 'is-visible' : ''}`} href="#invitation"
       aria-label="Back to the invitation" aria-hidden={!logoVisible} tabIndex={logoVisible ? 0 : -1}>
@@ -48,8 +51,8 @@ export default function Header({ active = false, introVisible = false, musicEnab
     </a>
     <div className="header-actions">
     <button type="button" className="music-toggle icon-button" onClick={onMusicToggle} aria-label={musicLabel}
-      title={musicTitle} aria-pressed={musicEnabled}>
-      {musicEnabled ? <Volume2 size={18} strokeWidth={1.4} aria-hidden="true" /> : <VolumeX size={18} strokeWidth={1.4} aria-hidden="true" />}
+      title={musicTitle} aria-pressed={musicPlaying} aria-busy={musicStatus === 'loading'}>
+      {musicPlaying ? <Volume2 size={18} strokeWidth={1.4} aria-hidden="true" /> : <VolumeX size={18} strokeWidth={1.4} aria-hidden="true" />}
     </button>
     <button className="menu-button icon-button" disabled={!active} aria-label={open ? 'Close menu' : 'Open menu'} title={open ? 'Close menu' : 'Open menu'}
       aria-expanded={open} aria-controls="invitation-navigation" onClick={() => setOpen(value => !value)}>
