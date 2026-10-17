@@ -15,6 +15,8 @@ import BackgroundMusic from './components/BackgroundMusic';
 export default function App() {
   const siteRef = useRef(null);
   const musicRef = useRef(null);
+  const introRef = useRef(null);
+  const introPlaybackStarted = useRef(false);
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [musicStatus, setMusicStatus] = useState('idle');
   const [phase, setPhase] = useState('intro');
@@ -28,8 +30,15 @@ export default function App() {
     if (event?.type === 'click' || event?.type === 'keydown') musicRef.current?.startFromInteraction();
     setPhase(current => current === 'intro' ? 'transition' : current);
   }, []);
-  const startIntro = useCallback((video, isCurrent) => musicRef.current.startIntro(video, isCurrent), []);
-  const toggleMusic = () => musicRef.current?.toggle();
+  const startIntro = useCallback(async (video, isCurrent, fromInteraction) => {
+    const success = await musicRef.current.startIntro(video, isCurrent, fromInteraction);
+    if (success && isCurrent()) introPlaybackStarted.current = true;
+    return success;
+  }, []);
+  const toggleMusic = () => {
+    if (phase === 'intro' && !introPlaybackStarted.current && musicStatus !== 'playing') introRef.current?.start();
+    else musicRef.current?.toggle();
+  };
   const finish = useCallback(() => setPhase('open'), []);
   useEffect(() => {
     document.title = `${wedding.groom.name} weds ${wedding.bride.name} | Wedding Invitation`;
@@ -43,9 +52,9 @@ export default function App() {
     <a href="#main-invitation" className="skip-link" onClick={event => {
       if (phase !== 'open') { event.preventDefault(); reveal(event); }
     }}>Skip to invitation</a>
-    <BackgroundMusic ref={musicRef} enabled={musicEnabled} onStateChange={updateMusicState} />
+    <BackgroundMusic ref={musicRef} enabled={musicEnabled} introActive={phase === 'intro'} onStateChange={updateMusicState} />
     <Header active={active} introVisible={phase !== 'open'} musicEnabled={musicEnabled} musicStatus={musicStatus} onMusicToggle={toggleMusic} />
-    {phase !== 'open' && <IntroVideo leaving={active} onStart={startIntro} onReveal={reveal} onComplete={finish} />}
+    {phase !== 'open' && <IntroVideo ref={introRef} leaving={active} onStart={startIntro} onReveal={reveal} onComplete={finish} />}
     <div ref={siteRef} className={`invitation-site ${active ? 'is-ready' : 'is-waiting'}`} inert={!active}>
       <main id="main-invitation">
         <MonogramReveal active={active} />

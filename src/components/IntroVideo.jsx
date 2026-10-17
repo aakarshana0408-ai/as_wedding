@@ -1,15 +1,21 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { Play } from 'lucide-react';
 import { wedding } from '../config/wedding';
 import WeddingMonogram from './WeddingMonogram';
 import useReducedMotion from '../hooks/useReducedMotion';
 
-export default function IntroVideo({ onStart, onReveal, onComplete, leaving = false }) {
+export default function IntroVideo({ onStart, onReveal, onComplete, leaving = false, ref }) {
   const videoRef = useRef(null);
   const started = useRef(false);
   const completed = useRef(false);
+  const run = useRef(0);
+  const pending = useRef(null);
+  const playbackStarted = useRef(false);
   const [mode, setMode] = useState(wedding.media.introVideo ? 'video' : 'fallback');
   const [playing, setPlaying] = useState(false);
   const [ready, setReady] = useState(false);
+  const [needsInteraction, setNeedsInteraction] = useState(false);
+  const [starting, setStarting] = useState(false);
   const reduced = useReducedMotion();
 
   const enter = useCallback(event => {
@@ -24,17 +30,44 @@ export default function IntroVideo({ onStart, onReveal, onComplete, leaving = fa
     onComplete();
   }, [onComplete]);
 
-  useEffect(() => {
-    if (leaving || mode !== 'video') return;
-    const video = videoRef.current;
-    let current = true;
-    onStart(video, () => current).catch(error => {
-      if (!current || error.name === 'AbortError') return;
-      if (video.error || error.name === 'NotSupportedError') setMode('fallback');
-      else enter();
+  const begin = useCallback((fromInteraction = false) => {
+    if (leaving || started.current || playbackStarted.current) return Promise.resolve(false);
+    if (pending.current) return pending.current;
+    const id = ++run.current;
+    const current = () => run.current === id && !started.current;
+    const video = mode === 'video' ? videoRef.current : null;
+    setStarting(true);
+    const request = onStart(video, current, fromInteraction).then(success => {
+      if (!current()) return false;
+      setNeedsInteraction(!success);
+      if (success) {
+        playbackStarted.current = true;
+        if (mode === 'fallback') setPlaying(true);
+      }
+      return success;
+    }).catch(error => {
+      if (!current() || error.name === 'AbortError') return false;
+      if (video?.error || error.name === 'NotSupportedError') setMode('fallback');
+      else setNeedsInteraction(true);
+      return false;
+    }).finally(() => {
+      if (current()) { pending.current = null; setStarting(false); }
     });
-    return () => { current = false; video.pause(); };
-  }, [leaving, mode, onStart, enter]);
+    pending.current = request;
+    return request;
+  }, [leaving, mode, onStart]);
+
+  useImperativeHandle(ref, () => ({ start: () => begin(true) }), [begin]);
+
+  useEffect(() => {
+    if (leaving || mode === 'video' && !ready) return;
+    void begin();
+    return () => {
+      run.current += 1;
+      pending.current = null;
+      videoRef.current?.pause();
+    };
+  }, [leaving, mode, ready, begin]);
 
   useEffect(() => {
     // Prepare only the opening's critical artwork and type while the film plays.
@@ -46,10 +79,10 @@ export default function IntroVideo({ onStart, onReveal, onComplete, leaving = fa
   }, []);
 
   useEffect(() => {
-    if (mode !== 'fallback') return;
+    if (mode !== 'fallback' || !playing) return;
     const timer = window.setTimeout(enter, reduced ? 500 : 2800);
     return () => window.clearTimeout(timer);
-  }, [mode, enter, reduced]);
+  }, [mode, playing, enter, reduced]);
 
   useEffect(() => {
     if (!leaving) return;
@@ -81,5 +114,9 @@ export default function IntroVideo({ onStart, onReveal, onComplete, leaving = fa
       <WeddingMonogram animated={false} />
       <span className="fine-rule" />
     </div>}
+    {(needsInteraction || starting) && !playing && !leaving && <button type="button" className="intro-start"
+      onClick={() => { void begin(true); }} disabled={starting} aria-label="Play invitation with music" aria-busy={starting}>
+      <span className="intro-start-label"><Play size={16} strokeWidth={1.4} aria-hidden="true" />{starting ? 'Starting...' : 'Play with sound'}</span>
+    </button>}
   </div>;
 }

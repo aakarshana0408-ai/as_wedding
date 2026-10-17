@@ -365,18 +365,23 @@ test('intro startup uses the same music player and does not re-cue an already pa
   music.destroy();
 });
 
-test('blocked music does not prevent the muted intro video from starting', async () => {
+test('blocked music holds the intro on its first frame until an interaction starts both', async () => {
   const audio = new AudioStub();
+  const play = audio.play.bind(audio);
   audio.play = () => Promise.reject(Object.assign(new Error('Blocked'), { name: 'NotAllowedError' }));
   const music = create(audio, () => {});
   let plays = 0;
-  await music.startIntro({ play: () => { plays += 1; return Promise.resolve(); } });
+  const video = { play: () => { plays += 1; assert.equal(audio.paused, false); return Promise.resolve(); } };
+  assert.equal(await music.startIntro(video), false);
+  assert.equal(plays, 0);
+  audio.play = play;
+  assert.equal(await music.startIntro(video, () => true, true), true);
   assert.equal(plays, 1);
   assert.equal(audio.currentTime, 20);
   music.destroy();
 });
 
-test('pending audio autoplay never delays the intro or restarts it after skipping', async () => {
+test('a skipped intro cannot start its video after pending audio permission resolves', async () => {
   const audio = new AudioStub();
   let resolve;
   audio.play = () => { audio.paused = false; return new Promise(done => { resolve = done; }); };
@@ -384,12 +389,66 @@ test('pending audio autoplay never delays the intro or restarts it after skippin
   let current = true;
   let videoPlays = 0;
   const pending = music.startIntro({ play: () => { videoPlays += 1; return Promise.resolve(); } }, () => current);
-  assert.equal(videoPlays, 1, 'the video must start without waiting for audio');
-  assert.equal(await pending, true, 'intro startup must not await the audio promise');
+  assert.equal(videoPlays, 0, 'the intro waits for music rather than playing silently');
   current = false;
   resolve();
-  await Promise.resolve();
+  assert.equal(await pending, false);
+  assert.equal(videoPlays, 0);
+  music.destroy();
+});
+
+test('the intro shares an in-flight initial music attempt without requesting a second player or play', async () => {
+  const audio = new AudioStub();
+  let resolve;
+  audio.play = () => { audio.plays += 1; audio.paused = false; return new Promise(done => { resolve = done; }); };
+  const music = create(audio, () => {});
+  const initial = music.startOnce();
+  let videoPlays = 0;
+  const pending = music.startIntro({ play: () => { videoPlays += 1; return Promise.resolve(); } });
+  assert.equal(audio.plays, 1);
+  assert.equal(videoPlays, 0);
+  resolve();
+  await initial;
+  assert.equal(await pending, true);
   assert.equal(videoPlays, 1);
+  assert.equal(audio.plays, 1);
+  music.destroy();
+});
+
+test('an explicit guest mute does not block video playback or get overridden during startup', async () => {
+  const audio = new AudioStub();
+  const music = create(audio, () => {});
+  await music.startOnce();
+  music.pause();
+  let videoPlays = 0;
+  assert.equal(await music.startIntro({ play: () => { videoPlays += 1; return Promise.resolve(); } }), true);
+  assert.equal(videoPlays, 1);
+  assert.equal(audio.muted, true);
+  assert.equal(audio.paused, true);
+  assert.equal(audio.plays, 1);
+  music.destroy();
+});
+
+test('a missing film can still start the same music player for the stationery fallback', async () => {
+  const audio = new AudioStub();
+  const music = create(audio, () => {});
+  assert.equal(await music.startIntro(null), true);
+  assert.equal(audio.paused, false);
+  music.destroy();
+});
+
+test('a film failure after a permitted tap does not demand a second music-start interaction', async () => {
+  const audio = new AudioStub();
+  const play = audio.play.bind(audio);
+  audio.play = () => Promise.reject(Object.assign(new Error('Gesture needed'), { name: 'NotAllowedError' }));
+  const music = create(audio, () => {});
+  const video = { play: () => Promise.reject(new Error('Film unavailable')) };
+  assert.equal(await music.startIntro(video), false);
+  audio.play = play;
+  await assert.rejects(music.startIntro(video, () => true, true), /Film unavailable/);
+  assert.equal(await music.startIntro(null), true);
+  assert.equal(audio.paused, false);
+  assert.equal(audio.plays, 1);
   music.destroy();
 });
 
@@ -407,8 +466,11 @@ test('late video rejection after cleanup cannot pause a newer audio session', as
   const audio = new AudioStub();
   const music = create(audio, () => {});
   let reject;
+  let videoStarted;
+  const ready = new Promise(resolve => { videoStarted = resolve; });
   let current = true;
-  const pending = music.startIntro({ play: () => new Promise((_, failed) => { reject = failed; }) }, () => current);
+  const pending = music.startIntro({ play: () => { videoStarted(); return new Promise((_, failed) => { reject = failed; }); } }, () => current);
+  await ready;
   current = false;
   reject(Object.assign(new Error('Cancelled'), { name: 'AbortError' }));
   await assert.rejects(pending, { name: 'AbortError' });

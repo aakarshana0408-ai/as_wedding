@@ -3,6 +3,7 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
     throw new RangeError('Music requires a valid source segment.');
   }
   let attempted = false;
+  let initialPlay;
   let disposed = false;
   let enabled = true;
   let playbackStarted = false;
@@ -98,9 +99,13 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
   }
 
   function startOnce() {
-    if (disposed || attempted || !enabled) return Promise.resolve(false);
-    attempted = true;
-    return play();
+    if (disposed || !enabled) return Promise.resolve(false);
+    if (playbackStarted && !audio.paused) return Promise.resolve(true);
+    if (!attempted) {
+      attempted = true;
+      initialPlay = play();
+    }
+    return initialPlay ?? Promise.resolve(playbackStarted && !audio.paused);
   }
 
   return {
@@ -110,11 +115,14 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
       if (disposed || !enabled || !retryOnInteraction || !audio.paused) return Promise.resolve(false);
       return play();
     },
-    async startIntro(video, isCurrent = () => true) {
+    async startIntro(video, isCurrent = () => true, fromInteraction = false) {
       if (disposed || !isCurrent()) return false;
-      // Audible autoplay must never hold up the muted film.
-      void startOnce();
-      await video.play();
+      if (enabled) {
+        if (fromInteraction) attempted = true;
+        const ready = await (fromInteraction ? play() : startOnce());
+        if (!ready || disposed || !isCurrent() || enabled && audio.paused) return false;
+      }
+      await video?.play();
       return !disposed && isCurrent();
     },
     toggle() {
