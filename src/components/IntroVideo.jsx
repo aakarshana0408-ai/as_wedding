@@ -1,21 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
 import { wedding } from '../config/wedding';
 import WeddingMonogram from './WeddingMonogram';
 import useReducedMotion from '../hooks/useReducedMotion';
 
-export default function IntroVideo({ onReveal, onComplete, leaving = false }) {
+export default function IntroVideo({ onStart, onReveal, onComplete, leaving = false }) {
   const videoRef = useRef(null);
   const started = useRef(false);
   const completed = useRef(false);
   const [mode, setMode] = useState(wedding.media.introVideo ? 'video' : 'fallback');
   const [playing, setPlaying] = useState(false);
+  const [ready, setReady] = useState(false);
   const reduced = useReducedMotion();
 
-  const enter = useCallback(() => {
+  const enter = useCallback(event => {
     if (started.current || leaving) return;
     started.current = true;
-    onReveal();
+    onReveal(event);
   }, [leaving, onReveal]);
 
   const complete = useCallback(() => {
@@ -23,6 +23,18 @@ export default function IntroVideo({ onReveal, onComplete, leaving = false }) {
     completed.current = true;
     onComplete();
   }, [onComplete]);
+
+  useEffect(() => {
+    if (leaving || mode !== 'video') return;
+    const video = videoRef.current;
+    let current = true;
+    onStart(video, () => current).catch(error => {
+      if (!current || error.name === 'AbortError') return;
+      if (video.error || error.name === 'NotSupportedError') setMode('fallback');
+      else enter();
+    });
+    return () => { current = false; video.pause(); };
+  }, [leaving, mode, onStart, enter]);
 
   useEffect(() => {
     // Prepare only the opening's critical artwork and type while the film plays.
@@ -34,18 +46,6 @@ export default function IntroVideo({ onReveal, onComplete, leaving = false }) {
   }, []);
 
   useEffect(() => {
-    if (mode !== 'video') return;
-    let disposed = false;
-    videoRef.current?.play().catch(error => {
-      if (disposed || started.current) return;
-      const unavailable = videoRef.current?.error || error.name === 'NotSupportedError';
-      setMode(current => current === 'fallback' || unavailable ? 'fallback'
-        : error.name === 'AbortError' ? current : 'blocked');
-    });
-    return () => { disposed = true; };
-  }, [mode]);
-
-  useEffect(() => {
     if (mode !== 'fallback') return;
     const timer = window.setTimeout(enter, reduced ? 500 : 2800);
     return () => window.clearTimeout(timer);
@@ -54,6 +54,7 @@ export default function IntroVideo({ onReveal, onComplete, leaving = false }) {
   useEffect(() => {
     if (!leaving) return;
     started.current = true;
+    videoRef.current?.pause();
     const timer = window.setTimeout(complete, reduced ? 50 : 700);
     return () => window.clearTimeout(timer);
   }, [leaving, reduced, complete]);
@@ -71,16 +72,14 @@ export default function IntroVideo({ onReveal, onComplete, leaving = false }) {
       if (leaving && event.target === event.currentTarget && event.propertyName === 'opacity') complete();
     }}>
     {mode !== 'fallback' && <div className="intro-film">
-      <video ref={videoRef} src={wedding.media.introVideo} muted playsInline autoPlay preload="auto"
+      <video ref={videoRef} src={wedding.media.introVideo} muted playsInline preload="auto"
         aria-label="Wedding invitation opening film" onEnded={enter}
+        onLoadedData={() => setReady(true)}
         onPlaying={() => { setPlaying(true); setMode('video'); }} onError={() => setMode('fallback')} />
     </div>}
-    {(!playing || mode === 'fallback') && <div className="intro-stationery" aria-hidden="true">
+    {((!ready && !playing) || mode === 'fallback') && <div className="intro-stationery" aria-hidden="true">
       <WeddingMonogram animated={false} />
       <span className="fine-rule" />
     </div>}
-    {mode === 'blocked' && !leaving && <button className="enter-invitation" onClick={enter}>
-      Enter Invitation <ArrowRight size={16} aria-hidden="true" />
-    </button>}
   </div>;
 }

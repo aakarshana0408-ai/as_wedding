@@ -10,7 +10,7 @@ export const wedding = {
   bride: {
     name: 'R. Asmitha', initial: 'A',
     parents: ['Mr. C. Ravichandran', 'Mrs. R. Sumathi'],
-    familyLocation: 'Namakkal, Tamil Nadu, India',
+    familyLocation: 'Salem, Tamil Nadu, India',
     nativePlace: 'Okkilipatti Village, Tiruchengode Taluk, Namakkal District',
   },
   date: '2026-11-20',
@@ -24,6 +24,7 @@ export const wedding = {
     address: 'Thuraiyur Salai, Perambalur', googleMapsUrl: null,
   },
   media: {
+    backgroundMusic: asset('wedding-background-music-timed.m4a'),
     introVideo: asset('wedding-intro-families-3.mp4'), ornament: asset('tamil-gold-foil-ornament.png'),
     ceremonyBackdrop: asset('tamil-wedding-backdrop.png'), lamp: asset('kuthuvilakku-realistic.png'),
     rings: asset('wedding-rings-jasmine.png'), floral: asset('jasmine-thoranam.png'), petal: asset('jasmine-petal.png'),
@@ -46,6 +47,7 @@ export const wedding = {
     closingPetal: asset('closing-watercolor-petal.png'),
   },
   gallery: { enabled: false, images: [] },
+  music: { start: 20, end: 80 },
   countdown: { heading: 'Counting the moments until forever', completeMessage: 'The celebration begins' },
   story: {
     beginnings: ['It started with two people.', 'It grew into a beautiful story.', 'And now, it becomes a lifetime.'],

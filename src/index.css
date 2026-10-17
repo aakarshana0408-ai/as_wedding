@@ -53,6 +53,8 @@ section, footer { position: relative; scroll-margin-top: 0; }
 .gold-ornament { width: 190px; height: auto; object-fit: contain; filter: saturate(0.58) brightness(0.86); }
 .icon-button { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; color: var(--wine); background: transparent; border: 1px solid transparent; border-radius: 0; }
 .icon-button:hover { border-color: var(--gold-line); }
+.music-toggle { flex: 0 0 44px; border: 1px solid #b18a4590; border-radius: 50%; background: rgb(248 241 232 / 96%); }
+.music-toggle:disabled { cursor: default; opacity: .55; }
 .skip-link { position: fixed; left: 1rem; top: 1rem; z-index: 100; background: var(--paper); padding: 0.8rem; transform: translateY(-160%); }
 .skip-link:focus { transform: translateY(0); }
 
@@ -72,9 +74,11 @@ html:has(.intro-overlay:not(.is-leaving)) { scrollbar-gutter: auto; overflow: hi
 }
 .intro-stationery { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; background: var(--paper); transition: opacity 1.8s ease; }
 .intro-stationery .monogram { width: 280px; max-width: 85%; margin: 0; animation: gentle-appear 1.6s ease both; }
-.enter-invitation { position: absolute; bottom: max(2rem, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 1rem; padding: 0.9rem 1.6rem; border: 1px solid var(--gold-line); background: var(--paper); color: var(--wine); font-family: var(--font-serif); font-size: 0.9rem; }
 .invitation-header { position: fixed; top: 0; left: 0; right: 0; z-index: 15; height: 78px; display: flex; align-items: center; justify-content: space-between; padding: 0 4rem; background: transparent; border-bottom: 1px solid transparent; transition: background-color 780ms var(--ease), border-color 780ms var(--ease); }
 .invitation-header.is-past-opening { background: var(--paper); border-bottom-color: #cbb89166; }
+.invitation-header.is-intro { z-index: 60; }
+.invitation-header.is-intro :is(.menu-button, nav) { visibility: hidden; pointer-events: none; }
+.header-actions { display: flex; align-items: center; gap: 12px; }
 .header-initials { display: flex; align-items: center; gap: 7px; width: 74px; height: 54px; color: var(--wine); font-family: var(--font-serif); font-size: 1.45rem; line-height: 1; white-space: nowrap; opacity: 0; transform: translateY(4px); pointer-events: none; transition: opacity 780ms var(--ease), transform 780ms var(--ease); }
 .header-initials.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
 .header-ampersand { color: #946b2d; font-size: 1.1rem; }

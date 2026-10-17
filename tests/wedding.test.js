@@ -216,7 +216,7 @@ test('confirmed family details and invitation wording are retained without quali
   assert.deepEqual(wedding.groom.parents, ['Mr. C. Prabakaran', 'Mrs. P. Shanthi']);
   assert.deepEqual(wedding.bride.parents, ['Mr. C. Ravichandran', 'Mrs. R. Sumathi']);
   assert.equal(wedding.groom.familyLocation, 'Perambalur, Tamil Nadu, India');
-  assert.equal(wedding.bride.familyLocation, 'Namakkal, Tamil Nadu, India');
+  assert.equal(wedding.bride.familyLocation, 'Salem, Tamil Nadu, India');
   assert.equal(wedding.groom.nativePlace, 'Aranarai, Perambalur District & Taluk');
   assert.equal(wedding.bride.nativePlace, 'Okkilipatti Village, Tiruchengode Taluk, Namakkal District');
   assert.ok(!('portrait' in wedding.groom));

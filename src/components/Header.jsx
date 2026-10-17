@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, Music2, VolumeX, X } from 'lucide-react';
 import { wedding } from '../config/wedding';
 
 const links = [['Invitation', '#invitation'], ['Celebrations', '#wedding']];
-export default function Header({ active = false }) {
+export default function Header({ active = false, introVisible = false, musicStatus = 'idle', onMusicToggle }) {
   const [open, setOpen] = useState(false);
   const [logoVisible, setLogoVisible] = useState(false);
   useEffect(() => {
@@ -38,17 +38,26 @@ export default function Header({ active = false }) {
       window.removeEventListener('scroll', revealLogo);
     };
   }, [active, logoVisible]);
-  return <header className={`invitation-header ${logoVisible ? 'is-past-opening' : ''}`}>
+  const musicPlaying = musicStatus === 'playing';
+  const musicLabel = musicStatus === 'ended' ? 'Music has finished' : musicPlaying ? 'Pause background music'
+    : musicStatus === 'unavailable' ? 'Retry background music' : 'Play background music';
+  return <header className={`invitation-header ${logoVisible ? 'is-past-opening' : ''} ${introVisible ? 'is-intro' : ''}`}>
     <a className={`header-initials ${logoVisible ? 'is-visible' : ''}`} href="#invitation"
       aria-label="Back to the invitation" aria-hidden={!logoVisible} tabIndex={logoVisible ? 0 : -1}>
       <span>{wedding.groom.initial}</span>{' '}<span className="header-ampersand">&amp;</span>{' '}<span>{wedding.bride.initial}</span>
     </a>
-    <button className="menu-button icon-button" aria-label={open ? 'Close menu' : 'Open menu'} title={open ? 'Close menu' : 'Open menu'}
+    <div className="header-actions">
+    <button type="button" className="music-toggle icon-button" onClick={onMusicToggle} aria-label={musicLabel}
+      title={musicLabel} aria-pressed={musicPlaying} disabled={musicStatus === 'ended'}>
+      {musicPlaying ? <Music2 size={18} strokeWidth={1.4} aria-hidden="true" /> : <VolumeX size={18} strokeWidth={1.4} aria-hidden="true" />}
+    </button>
+    <button className="menu-button icon-button" disabled={!active} aria-label={open ? 'Close menu' : 'Open menu'} title={open ? 'Close menu' : 'Open menu'}
       aria-expanded={open} aria-controls="invitation-navigation" onClick={() => setOpen(value => !value)}>
       {open ? <X size={21} /> : <Menu size={23} strokeWidth={1} />}
     </button>
-    <nav id="invitation-navigation" className={open ? 'is-open' : ''} aria-label="Invitation sections">
+    <nav id="invitation-navigation" className={open ? 'is-open' : ''} aria-label="Invitation sections" inert={!active}>
       {links.map(([label, href]) => <a key={href} href={href} onClick={() => setOpen(false)}>{label}</a>)}
     </nav>
+    </div>
   </header>;
 }
