@@ -60,14 +60,14 @@ export default function IntroVideo({ onStart, onReveal, onComplete, leaving = fa
   useImperativeHandle(ref, () => ({ start: () => begin(true) }), [begin]);
 
   useEffect(() => {
-    if (leaving || mode === 'video' && !ready) return;
+    if (leaving) return;
     void begin();
     return () => {
       run.current += 1;
       pending.current = null;
       videoRef.current?.pause();
     };
-  }, [leaving, mode, ready, begin]);
+  }, [leaving, mode, begin]);
 
   useEffect(() => {
     // Prepare only the opening's critical artwork and type while the film plays.
@@ -96,7 +96,7 @@ export default function IntroVideo({ onStart, onReveal, onComplete, leaving = fa
     if (mode !== 'video' || playing) return;
     const timer = window.setTimeout(() => {
       if (!started.current && videoRef.current?.readyState === 0) setMode('fallback');
-    }, 10000);
+    }, 30000);
     return () => window.clearTimeout(timer);
   }, [mode, playing]);
 

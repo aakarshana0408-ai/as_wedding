@@ -36,7 +36,7 @@ export default function App() {
     return success;
   }, []);
   const toggleMusic = () => {
-    if (phase === 'intro' && !introPlaybackStarted.current && musicStatus !== 'playing') introRef.current?.start();
+    if (phase === 'intro' && !introPlaybackStarted.current && musicEnabled && musicStatus !== 'playing') introRef.current?.start();
     else musicRef.current?.toggle();
   };
   const finish = useCallback(() => setPhase('open'), []);
