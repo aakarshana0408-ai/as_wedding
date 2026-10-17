@@ -81,6 +81,12 @@ html:has(.intro-overlay:not(.is-leaving)) { scrollbar-gutter: auto; overflow: hi
 .invitation-header.is-past-opening { background: var(--paper); border-bottom-color: #cbb89166; }
 .invitation-header.is-intro { z-index: 60; }
 .invitation-header.is-intro :is(.menu-button, nav) { visibility: hidden; pointer-events: none; }
+.invitation-header.is-intro .music-toggle {
+  position: fixed;
+  top: calc(max(6rem, 18vh) + env(safe-area-inset-top, 0px));
+  top: calc(max(6rem, 18dvh) + env(safe-area-inset-top, 0px));
+  right: calc(1rem + env(safe-area-inset-right, 0px));
+}
 .header-actions { display: flex; align-items: center; gap: 12px; }
 .header-initials { display: flex; align-items: center; gap: 7px; width: 74px; height: 54px; color: var(--wine); font-family: var(--font-serif); font-size: 1.45rem; line-height: 1; white-space: nowrap; opacity: 0; transform: translateY(4px); pointer-events: none; transition: opacity 780ms var(--ease), transform 780ms var(--ease); }
 .header-initials.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
