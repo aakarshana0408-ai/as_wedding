@@ -3,7 +3,7 @@ import { Menu, Volume2, VolumeX, X } from 'lucide-react';
 import { wedding } from '../config/wedding';
 
 const links = [['Invitation', '#invitation'], ['Celebrations', '#wedding']];
-export default function Header({ active = false, introVisible = false, musicStatus = 'idle', onMusicToggle }) {
+export default function Header({ active = false, introVisible = false, musicEnabled = true, musicStatus = 'idle', onMusicToggle }) {
   const [open, setOpen] = useState(false);
   const [logoVisible, setLogoVisible] = useState(false);
   useEffect(() => {
@@ -38,9 +38,9 @@ export default function Header({ active = false, introVisible = false, musicStat
       window.removeEventListener('scroll', revealLogo);
     };
   }, [active, logoVisible]);
-  const musicPlaying = musicStatus === 'playing';
-  const musicLabel = musicPlaying ? 'Pause background music'
-    : musicStatus === 'unavailable' ? 'Retry background music' : 'Play background music';
+  const musicLabel = musicEnabled ? 'Mute background music' : 'Unmute background music';
+  const musicTitle = musicEnabled && musicStatus === 'blocked'
+    ? 'Music enabled; playback starts on your first interaction' : musicLabel;
   return <header className={`invitation-header ${logoVisible ? 'is-past-opening' : ''} ${introVisible ? 'is-intro' : ''}`}>
     <a className={`header-initials ${logoVisible ? 'is-visible' : ''}`} href="#invitation"
       aria-label="Back to the invitation" aria-hidden={!logoVisible} tabIndex={logoVisible ? 0 : -1}>
@@ -48,8 +48,8 @@ export default function Header({ active = false, introVisible = false, musicStat
     </a>
     <div className="header-actions">
     <button type="button" className="music-toggle icon-button" onClick={onMusicToggle} aria-label={musicLabel}
-      title={musicLabel} aria-pressed={musicPlaying}>
-      {musicPlaying ? <Volume2 size={18} strokeWidth={1.4} aria-hidden="true" /> : <VolumeX size={18} strokeWidth={1.4} aria-hidden="true" />}
+      title={musicTitle} aria-pressed={musicEnabled}>
+      {musicEnabled ? <Volume2 size={18} strokeWidth={1.4} aria-hidden="true" /> : <VolumeX size={18} strokeWidth={1.4} aria-hidden="true" />}
     </button>
     <button className="menu-button icon-button" disabled={!active} aria-label={open ? 'Close menu' : 'Open menu'} title={open ? 'Close menu' : 'Open menu'}
       aria-expanded={open} aria-controls="invitation-navigation" onClick={() => setOpen(value => !value)}>

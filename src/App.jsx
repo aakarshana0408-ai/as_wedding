@@ -15,10 +15,15 @@ import BackgroundMusic from './components/BackgroundMusic';
 export default function App() {
   const siteRef = useRef(null);
   const musicRef = useRef(null);
+  const [musicEnabled, setMusicEnabled] = useState(true);
   const [musicStatus, setMusicStatus] = useState('idle');
   const [phase, setPhase] = useState('intro');
   const active = phase !== 'intro';
   useCinematicScroll(siteRef, active);
+  const updateMusicState = useCallback(({ enabled, status }) => {
+    setMusicEnabled(enabled);
+    setMusicStatus(status);
+  }, []);
   const reveal = useCallback(event => {
     if (event?.type === 'click' || event?.type === 'keydown') musicRef.current?.startFromInteraction();
     setPhase(current => current === 'intro' ? 'transition' : current);
@@ -38,8 +43,8 @@ export default function App() {
     <a href="#main-invitation" className="skip-link" onClick={event => {
       if (phase !== 'open') { event.preventDefault(); reveal(event); }
     }}>Skip to invitation</a>
-    <BackgroundMusic ref={musicRef} onStatusChange={setMusicStatus} />
-    <Header active={active} introVisible={phase !== 'open'} musicStatus={musicStatus} onMusicToggle={toggleMusic} />
+    <BackgroundMusic ref={musicRef} enabled={musicEnabled} onStateChange={updateMusicState} />
+    <Header active={active} introVisible={phase !== 'open'} musicEnabled={musicEnabled} musicStatus={musicStatus} onMusicToggle={toggleMusic} />
     {phase !== 'open' && <IntroVideo leaving={active} onStart={startIntro} onReveal={reveal} onComplete={finish} />}
     <div ref={siteRef} className={`invitation-site ${active ? 'is-ready' : 'is-waiting'}`} inert={!active}>
       <main id="main-invitation">

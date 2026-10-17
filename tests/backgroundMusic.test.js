@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createBackgroundMusic } from '../src/lib/backgroundMusic.js';
 
 class AudioStub extends EventTarget {
+  muted = true;
   paused = true;
   ended = false;
   currentTime = 0;
@@ -28,7 +29,71 @@ class AudioStub extends EventTarget {
 }
 
 const segment = { start: 20, end: 80 };
-const create = (audio, onChange) => createBackgroundMusic(audio, onChange, segment);
+const create = (audio, onChange) => createBackgroundMusic(audio, state => onChange(state.status), segment);
+
+test('every fresh music controller explicitly starts unmuted and reports enabled playback', async () => {
+  const audio = new AudioStub();
+  const states = [];
+  const music = createBackgroundMusic(audio, state => states.push(state), segment);
+  assert.equal(audio.muted, false);
+  await music.startOnce();
+  assert.equal(audio.paused, false);
+  assert.deepEqual(states.at(-1), { status: 'playing', enabled: true });
+  music.destroy();
+});
+
+test('autoplay blocking never changes the real audio or intended setting to muted', async () => {
+  const audio = new AudioStub();
+  const states = [];
+  const play = audio.play.bind(audio);
+  audio.play = () => Promise.reject(Object.assign(new Error('Gesture needed'), { name: 'NotAllowedError' }));
+  const music = createBackgroundMusic(audio, state => states.push(state), segment);
+  await music.startOnce();
+  assert.equal(audio.muted, false);
+  assert.deepEqual(states.at(-1), { status: 'blocked', enabled: true });
+  audio.play = play;
+  await music.resumeFromInteraction();
+  assert.equal(audio.muted, false);
+  assert.equal(audio.paused, false);
+  assert.deepEqual(states.at(-1), { status: 'playing', enabled: true });
+  music.destroy();
+});
+
+test('the toggle actually mutes and pauses, then unmutes at the exact paused position', async () => {
+  const audio = new AudioStub();
+  const states = [];
+  const music = createBackgroundMusic(audio, state => states.push(state), segment);
+  await music.startOnce();
+  audio.currentTime = 34.125;
+  await music.toggle();
+  assert.equal(audio.muted, true);
+  assert.equal(audio.paused, true);
+  assert.deepEqual(states.at(-1), { status: 'paused', enabled: false });
+  await music.toggle();
+  assert.equal(audio.muted, false);
+  assert.equal(audio.paused, false);
+  assert.equal(audio.currentTime, 34.125);
+  assert.deepEqual(states.at(-1), { status: 'playing', enabled: true });
+  music.destroy();
+});
+
+test('the first toggle still mutes when autoplay has not been permitted', async () => {
+  const audio = new AudioStub();
+  const states = [];
+  const play = audio.play.bind(audio);
+  audio.play = () => Promise.reject(Object.assign(new Error('Blocked'), { name: 'NotAllowedError' }));
+  const music = createBackgroundMusic(audio, state => states.push(state), segment);
+  await music.startOnce();
+  await music.toggle();
+  assert.equal(audio.muted, true);
+  assert.deepEqual(states.at(-1), { status: 'paused', enabled: false });
+  audio.play = play;
+  assert.equal(await music.resumeFromInteraction(), false);
+  await music.toggle();
+  assert.equal(audio.muted, false);
+  assert.equal(audio.paused, false);
+  music.destroy();
+});
 
 test('music cues once without enabling a whole-file loop over the silent lead-in', async () => {
   const audio = new AudioStub();
@@ -72,6 +137,8 @@ test('blocked playback is handled and the toggle can retry without an unhandled 
   assert.equal(states.at(-1), 'blocked');
   assert.equal(await music.startOnce(), false);
   audio.play = play;
+  await music.toggle();
+  assert.equal(audio.muted, true);
   assert.equal(await music.toggle(), true);
   assert.equal(states.at(-1), 'playing');
   music.destroy();
@@ -204,6 +271,7 @@ test('a transient media error can be retried without resetting other invitation 
   audio.error = {};
   audio.dispatchEvent(new Event('error'));
   assert.equal(states.at(-1), 'unavailable');
+  await music.toggle();
   await music.toggle();
   assert.equal(audio.loads, 1);
   assert.equal(states.at(-1), 'playing');

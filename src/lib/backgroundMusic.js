@@ -10,7 +10,7 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
   let savedPosition = start;
   let pendingPosition = start;
 
-  const report = status => { if (!disposed) onChange(status); };
+  const report = status => { if (!disposed) onChange({ status, enabled }); };
   const cue = () => {
     if (pendingPosition === null || audio.readyState < 1) return;
     audio.currentTime = pendingPosition;
@@ -42,6 +42,7 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
   };
   const timeUpdate = () => { save(); repeat(); };
   const unavailable = () => { save(); request += 1; report('unavailable'); };
+  audio.muted = false;
   audio.loop = false;
   audio.addEventListener('loadedmetadata', cue);
   audio.addEventListener('playing', playing);
@@ -63,6 +64,7 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
     };
     try {
       retryOnInteraction = false;
+      audio.muted = false;
       if (audio.currentTime >= end) { savedPosition = start; pendingPosition = start; }
       if (audio.error) { pendingPosition = savedPosition; audio.load(); }
       cue();
@@ -79,6 +81,7 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
   function pause() {
     if (disposed) return;
     enabled = false;
+    audio.muted = true;
     retryOnInteraction = false;
     save();
     request += 1;
@@ -109,11 +112,12 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
     toggle() {
       if (disposed) return Promise.resolve(false);
       attempted = true;
-      if (!audio.paused) {
+      if (enabled) {
         pause();
         return Promise.resolve(false);
       }
       enabled = true;
+      audio.muted = false;
       return play();
     },
     destroy() {
