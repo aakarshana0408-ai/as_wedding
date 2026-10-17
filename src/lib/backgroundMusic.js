@@ -19,8 +19,12 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
   };
   const cue = () => {
     if (pendingPosition === null || audio.readyState < 1) return;
-    audio.currentTime = pendingPosition;
-    pendingPosition = null;
+    try {
+      if (audio.currentTime !== pendingPosition) audio.currentTime = pendingPosition;
+      pendingPosition = null;
+    } catch {
+      // Mobile media can expose metadata before its seekable range is ready.
+    }
   };
   const save = () => {
     if (audio.currentTime >= start) savedPosition = Math.min(end, audio.currentTime);
@@ -28,9 +32,12 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
   const playing = () => {
     if (audio.paused) return;
     if (!enabled) { audio.pause(); return; }
+    if (audio.muted) { report('paused'); return; }
     retryOnInteraction = false;
     report('playing');
   };
+  const waiting = () => { if (enabled && !audio.paused) report('loading'); };
+  const volumeChange = () => { if (audio.muted) report('paused'); };
   const paused = () => {
     if (!audio.paused || audio.ended) return;
     save();
@@ -40,7 +47,7 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
   };
   const repeat = () => {
     if (disposed || !enabled || audio.currentTime < end) return;
-    // Repeat only the selected passage, never the file's silent first 20 seconds.
+    // Repeat the selected passage on the same player without reloading it.
     savedPosition = start;
     pendingPosition = start;
     cue();
@@ -52,7 +59,10 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
   audio.muted = false;
   audio.loop = false;
   audio.addEventListener('loadedmetadata', cue);
+  audio.addEventListener('canplay', cue);
   audio.addEventListener('playing', playing);
+  audio.addEventListener('waiting', waiting);
+  audio.addEventListener('volumechange', volumeChange);
   audio.addEventListener('pause', paused);
   audio.addEventListener('ended', repeat);
   audio.addEventListener('timeupdate', timeUpdate);
@@ -64,9 +74,9 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
     if (disposed || !enabled) return Promise.resolve(false);
     const current = ++request;
     const failed = error => {
-      if (!disposed && current === request && error.name !== 'AbortError') {
-        retryOnInteraction = error.name === 'NotAllowedError';
-        report(error.name === 'NotAllowedError' ? 'blocked' : 'unavailable');
+      if (!disposed && current === request) {
+        retryOnInteraction = error.name === 'NotAllowedError' || error.name === 'AbortError';
+        report(retryOnInteraction ? 'blocked' : 'unavailable');
       }
       return false;
     };
@@ -78,7 +88,7 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
       if (audio.error) { pendingPosition = savedPosition; audio.load(); }
       cue();
       return Promise.resolve(audio.play()).then(() => {
-        if (disposed || !enabled || current !== request || audio.paused) return false;
+        if (disposed || !enabled || current !== request || audio.paused || audio.muted) return false;
         report('playing');
         return true;
       }, failed);
@@ -141,7 +151,10 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
       disposed = true;
       request += 1;
       audio.removeEventListener('loadedmetadata', cue);
+      audio.removeEventListener('canplay', cue);
       audio.removeEventListener('playing', playing);
+      audio.removeEventListener('waiting', waiting);
+      audio.removeEventListener('volumechange', volumeChange);
       audio.removeEventListener('pause', paused);
       audio.removeEventListener('ended', repeat);
       audio.removeEventListener('timeupdate', timeUpdate);

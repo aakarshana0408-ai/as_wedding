@@ -544,3 +544,102 @@ test('multiple natural repeats preserve the same player and never enter a finish
 test('invalid source segments are rejected', () => {
   assert.throws(() => createBackgroundMusic(new AudioStub(), () => {}, { start: 20, end: 19 }), RangeError);
 });
+
+test('a genuine entry interaction calls native play synchronously even while autoplay is pending', async () => {
+  const audio = new AudioStub();
+  const music = create(audio, () => {});
+  let resolveAutomatic;
+  let insideTap = false;
+  const attempts = [];
+  audio.play = () => {
+    attempts.push(insideTap);
+    audio.paused = false;
+    return insideTap ? Promise.resolve() : new Promise(resolve => { resolveAutomatic = resolve; });
+  };
+  let current = true;
+  let videoPlays = 0;
+  const video = { play: () => { videoPlays += 1; return Promise.resolve(); } };
+  const automatic = music.startIntro(video, () => current);
+  current = false;
+  insideTap = true;
+  const tapped = music.startIntro(video, () => true, true);
+  insideTap = false;
+  assert.deepEqual(attempts, [false, true], 'play must run before the tap handler returns');
+  assert.equal(await tapped, true);
+  resolveAutomatic();
+  assert.equal(await automatic, false);
+  assert.equal(videoPlays, 1, 'the replaced automatic request must not start a second film');
+  music.destroy();
+});
+
+test('the mobile excerpt starts at zero without a startup seek or silent pre-roll', async () => {
+  const audio = new AudioStub();
+  let seeks = 0;
+  Object.defineProperty(audio, 'currentTime', {
+    get: () => 0,
+    set: () => { seeks += 1; throw new DOMException('Not yet seekable', 'InvalidStateError'); },
+  });
+  const music = createBackgroundMusic(audio, () => {}, { start: 0, end: 60 });
+  assert.equal(await music.startOnce(), true);
+  assert.equal(seeks, 0);
+  assert.equal(audio.paused, false);
+  music.destroy();
+});
+
+test('metadata before a seekable range cannot prevent the synchronous native play call', async () => {
+  const audio = new AudioStub();
+  let position = 0;
+  let seekable = false;
+  Object.defineProperty(audio, 'currentTime', {
+    get: () => position,
+    set: value => {
+      if (!seekable) throw new DOMException('Not yet seekable', 'InvalidStateError');
+      position = value;
+    },
+  });
+  const music = create(audio, () => {});
+  const pending = music.startIntro(null, () => true, true);
+  assert.equal(audio.plays, 1);
+  assert.equal(await pending, true);
+  seekable = true;
+  audio.dispatchEvent(new Event('canplay'));
+  assert.equal(audio.currentTime, 20);
+  audio.currentTime = 26.75;
+  audio.dispatchEvent(new Event('canplay'));
+  assert.equal(audio.currentTime, 26.75, 'metadata retries must never rewind an initialized player');
+  music.destroy();
+});
+
+test('a native aborted playback attempt is retryable rather than stuck in loading', async () => {
+  const audio = new AudioStub();
+  const play = audio.play.bind(audio);
+  const states = [];
+  audio.play = () => Promise.reject(new DOMException('Interrupted startup', 'AbortError'));
+  const music = create(audio, state => states.push(state));
+  assert.equal(await music.startOnce(), false);
+  assert.equal(states.at(-1), 'blocked');
+  audio.play = play;
+  assert.equal(await music.resumeFromInteraction(), true);
+  assert.equal(states.at(-1), 'playing');
+  music.destroy();
+});
+
+test('buffering and native muting cannot keep reporting music as playing', async () => {
+  const audio = new AudioStub();
+  const states = [];
+  const music = create(audio, state => states.push(state));
+  await music.startOnce();
+  audio.dispatchEvent(new Event('waiting'));
+  assert.equal(states.at(-1), 'loading');
+  audio.dispatchEvent(new Event('playing'));
+  assert.equal(states.at(-1), 'playing');
+  audio.muted = true;
+  audio.dispatchEvent(new Event('volumechange'));
+  assert.equal(states.at(-1), 'paused');
+  audio.dispatchEvent(new Event('playing'));
+  assert.equal(states.at(-1), 'paused');
+  await music.toggle();
+  assert.equal(audio.muted, false);
+  assert.equal(states.at(-1), 'playing');
+  music.destroy();
+});

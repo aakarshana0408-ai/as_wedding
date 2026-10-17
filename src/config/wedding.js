@@ -24,7 +24,7 @@ export const wedding = {
     address: 'Thuraiyur Salai, Perambalur', googleMapsUrl: null,
   },
   media: {
-    backgroundMusic: asset('wedding-background-music-timed.m4a'),
+    backgroundMusic: asset('wedding-background-music-mobile.m4a'),
     introVideo: asset('wedding-intro-families-3.mp4'), ornament: asset('tamil-gold-foil-ornament.png'),
     ceremonyBackdrop: asset('tamil-wedding-backdrop.png'), lamp: asset('kuthuvilakku-realistic.png'),
     rings: asset('wedding-rings-jasmine.png'), floral: asset('jasmine-thoranam.png'), petal: asset('jasmine-petal.png'),
@@ -47,7 +47,7 @@ export const wedding = {
     closingPetal: asset('closing-watercolor-petal.png'),
   },
   gallery: { enabled: false, images: [] },
-  music: { start: 20, end: 80 },
+  music: { start: 0, end: 60 },
   countdown: { heading: 'Counting the moments until forever', completeMessage: 'The celebration begins' },
   story: {
     beginnings: ['It started with two people.', 'It grew into a beautiful story.', 'And now, it becomes a lifetime.'],

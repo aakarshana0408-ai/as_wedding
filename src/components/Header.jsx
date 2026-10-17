@@ -52,7 +52,7 @@ export default function Header({ active = false, introVisible = false, musicEnab
     </a>
     <div className="header-actions">
     <button type="button" className="music-toggle icon-button" onClick={onMusicToggle} aria-label={musicLabel}
-      title={musicTitle} aria-pressed={musicEnabled} aria-busy={musicStatus === 'loading'} data-playback-state={musicStatus}>
+      title={musicTitle} aria-pressed={musicPlaying} aria-busy={musicStatus === 'loading'} data-playback-state={musicStatus}>
       <MusicIcon size={18} strokeWidth={1.4} aria-hidden="true" />
     </button>
     <button className="menu-button icon-button" disabled={!active} aria-label={open ? 'Close menu' : 'Open menu'} title={open ? 'Close menu' : 'Open menu'}

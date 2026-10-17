@@ -32,7 +32,7 @@ export default function IntroVideo({ onStart, onReveal, onComplete, leaving = fa
 
   const begin = useCallback((fromInteraction = false) => {
     if (leaving || started.current || playbackStarted.current) return Promise.resolve(false);
-    if (pending.current) return pending.current;
+    if (pending.current && !fromInteraction) return pending.current;
     const id = ++run.current;
     const current = () => run.current === id && !started.current;
     const video = mode === 'video' ? videoRef.current : null;
@@ -115,7 +115,7 @@ export default function IntroVideo({ onStart, onReveal, onComplete, leaving = fa
       <span className="fine-rule" />
     </div>}
     {(needsInteraction || starting) && !playing && !leaving && <button type="button" className="intro-start"
-      onClick={() => { void begin(true); }} disabled={starting} aria-label="Play invitation with music" aria-busy={starting}>
+      onClick={() => { void begin(true); }} aria-label="Play invitation with music" aria-busy={starting}>
       <span className="intro-start-label"><Play size={16} strokeWidth={1.4} aria-hidden="true" />{starting ? 'Starting...' : 'Play with sound'}</span>
     </button>}
   </div>;
