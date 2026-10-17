@@ -116,7 +116,7 @@ export default function IntroVideo({ onStart, onReveal, onComplete, leaving = fa
     </div>}
     {(needsInteraction || starting) && !playing && !leaving && <button type="button" className="intro-start"
       onClick={() => { void begin(true); }} aria-label="Play invitation with music" aria-busy={starting}>
-      <span className="intro-start-label"><Play size={16} strokeWidth={1.4} aria-hidden="true" />{starting ? 'Starting...' : 'Play with sound'}</span>
+      <span className="intro-start-label"><Play size={16} strokeWidth={1.4} aria-hidden="true" />{starting ? 'Starting...' : 'Play'}</span>
     </button>}
   </div>;
 }
