@@ -47,6 +47,7 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
   };
   const timeUpdate = () => { save(); repeat(); };
   const unavailable = () => { save(); request += 1; report('unavailable'); };
+  audio.defaultMuted = false;
   audio.muted = false;
   audio.loop = false;
   audio.addEventListener('loadedmetadata', cue);
@@ -55,6 +56,7 @@ export function createBackgroundMusic(audio, onChange, { start, end }) {
   audio.addEventListener('ended', repeat);
   audio.addEventListener('timeupdate', timeUpdate);
   audio.addEventListener('error', unavailable);
+  report('idle');
   cue();
 
   function play() {

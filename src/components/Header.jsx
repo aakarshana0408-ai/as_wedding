@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Menu, Volume2, VolumeX, X } from 'lucide-react';
+import { Menu, Volume, Volume2, VolumeX, X } from 'lucide-react';
 import { wedding } from '../config/wedding';
 
 const links = [['Invitation', '#invitation'], ['Celebrations', '#wedding']];
@@ -39,11 +39,12 @@ export default function Header({ active = false, introVisible = false, musicEnab
     };
   }, [active, logoVisible]);
   const musicPlaying = musicEnabled && musicStatus === 'playing';
+  const MusicIcon = !musicEnabled ? VolumeX : musicPlaying ? Volume2 : Volume;
   const musicLabel = musicPlaying ? 'Mute background music'
     : musicStatus === 'unavailable' ? 'Retry background music'
       : musicEnabled ? 'Play background music' : 'Unmute background music';
-  const musicTitle = musicStatus === 'loading' ? 'Starting background music'
-    : musicStatus === 'blocked' ? 'Tap to play background music' : musicLabel;
+  const musicTitle = musicStatus === 'loading' ? 'Music is unmuted; starting playback'
+    : musicStatus === 'blocked' ? 'Music is unmuted; tap to start playback' : musicLabel;
   return <header className={`invitation-header ${logoVisible ? 'is-past-opening' : ''} ${introVisible ? 'is-intro' : ''}`}>
     <a className={`header-initials ${logoVisible ? 'is-visible' : ''}`} href="#invitation"
       aria-label="Back to the invitation" aria-hidden={!logoVisible} tabIndex={logoVisible ? 0 : -1}>
@@ -51,8 +52,8 @@ export default function Header({ active = false, introVisible = false, musicEnab
     </a>
     <div className="header-actions">
     <button type="button" className="music-toggle icon-button" onClick={onMusicToggle} aria-label={musicLabel}
-      title={musicTitle} aria-pressed={musicPlaying} aria-busy={musicStatus === 'loading'}>
-      {musicPlaying ? <Volume2 size={18} strokeWidth={1.4} aria-hidden="true" /> : <VolumeX size={18} strokeWidth={1.4} aria-hidden="true" />}
+      title={musicTitle} aria-pressed={musicEnabled} aria-busy={musicStatus === 'loading'} data-playback-state={musicStatus}>
+      <MusicIcon size={18} strokeWidth={1.4} aria-hidden="true" />
     </button>
     <button className="menu-button icon-button" disabled={!active} aria-label={open ? 'Close menu' : 'Open menu'} title={open ? 'Close menu' : 'Open menu'}
       aria-expanded={open} aria-controls="invitation-navigation" onClick={() => setOpen(value => !value)}>

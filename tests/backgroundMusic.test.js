@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createBackgroundMusic } from '../src/lib/backgroundMusic.js';
 
 class AudioStub extends EventTarget {
+  defaultMuted = true;
   muted = true;
   paused = true;
   ended = false;
@@ -36,10 +37,52 @@ test('every fresh music controller explicitly starts unmuted and reports enabled
   const states = [];
   const music = createBackgroundMusic(audio, state => states.push(state), segment);
   assert.equal(audio.muted, false);
+  assert.equal(audio.defaultMuted, false);
+  assert.deepEqual(states.at(-1), { status: 'idle', enabled: true });
   await music.startOnce();
   assert.equal(audio.paused, false);
   assert.deepEqual(states.at(-1), { status: 'playing', enabled: true });
   music.destroy();
+});
+
+test('a fresh player clears both native mute flags and never inherits the previous session mute', async () => {
+  const audio = new AudioStub();
+  const first = createBackgroundMusic(audio, () => {}, segment);
+  await first.startOnce();
+  await first.toggle();
+  assert.equal(audio.muted, true);
+  first.destroy();
+  audio.defaultMuted = true;
+  const states = [];
+  const fresh = createBackgroundMusic(audio, state => states.push(state), segment);
+  assert.equal(audio.defaultMuted, false);
+  assert.equal(audio.muted, false);
+  assert.deepEqual(states.at(-1), { status: 'idle', enabled: true });
+  assert.equal(await fresh.startOnce(), true);
+  assert.equal(audio.paused, false);
+  assert.deepEqual(states.at(-1), { status: 'playing', enabled: true });
+  fresh.destroy();
+});
+
+test('refresh defaults stay unmuted even when the new page must wait for autoplay permission', async () => {
+  const audio = new AudioStub();
+  const first = createBackgroundMusic(audio, () => {}, segment);
+  await first.startOnce();
+  first.pause();
+  first.destroy();
+  const play = audio.play.bind(audio);
+  audio.play = () => Promise.reject(Object.assign(new Error('New gesture needed'), { name: 'NotAllowedError' }));
+  const states = [];
+  const fresh = createBackgroundMusic(audio, state => states.push(state), segment);
+  assert.equal(await fresh.startOnce(), false);
+  assert.equal(audio.muted, false);
+  assert.equal(audio.defaultMuted, false);
+  assert.deepEqual(states.at(-1), { status: 'blocked', enabled: true });
+  audio.play = play;
+  assert.equal(await fresh.resumeFromInteraction(), true);
+  assert.equal(audio.muted, false);
+  assert.equal(audio.paused, false);
+  fresh.destroy();
 });
 
 test('autoplay blocking never changes the real audio or intended setting to muted', async () => {
@@ -432,7 +475,7 @@ test('multiple natural repeats preserve the same player and never enter a finish
   }
   assert.equal(audio.plays, 4);
   assert.equal(audio.loads, 0);
-  assert.ok(states.every(state => state === 'loading' || state === 'playing'));
+  assert.ok(states.every(state => state === 'idle' || state === 'loading' || state === 'playing'));
   music.destroy();
 });
 
